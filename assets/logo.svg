@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="40" fill="#111"/>
+<path d="M120 270 L256 160 L392 270" fill="none" stroke="#B8860B" stroke-width="10"/>
+<path d="M160 270V360H352V270" fill="none" stroke="#B8860B" stroke-width="10"/>
+<path d="M220 250V300H292V250" fill="none" stroke="#B8860B" stroke-width="8"/>
+<text x="256" y="430" font-size="44" text-anchor="middle" fill="white" font-family="Georgia">THE WHITE WOOD</text>
+</svg>

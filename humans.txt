@@ -1,0 +1,28 @@
+/* TEAM */
+
+Project
+The White Wood Homestay
+
+Website
+https://thewhitewood.my
+
+Design
+Luxury Scandinavian
+
+Developer
+ChatGPT + Owner
+
+Technology
+
+HTML5
+CSS3
+JavaScript
+
+Hosted on
+
+Cloudflare
+
+/* THANK YOU */
+
+Thank you for visiting
+The White Wood Homestay.
