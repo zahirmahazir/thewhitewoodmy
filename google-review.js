@@ -101,7 +101,7 @@ function createReviewCard(review) {
     card.className = "review-card";
 
     const author = String(review.author || "Google User");
-    const avatar = author.substring(0,1).toUpperCase();
+    const avatar = author.substring(0, 1).toUpperCase();
     const text = String(review.text || "");
     const stars = createStars(Number(review.rating || 5));
     const date = formatDate(review.publishTime);
@@ -122,11 +122,8 @@ function createReviewCard(review) {
             </div>
 
             <div class="review-card__info">
-
                 <h4>${author}</h4>
-
                 <span>${date}</span>
-
             </div>
 
         </div>
