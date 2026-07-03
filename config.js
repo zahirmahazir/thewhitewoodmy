@@ -53,6 +53,7 @@ const CONFIG = {
 
     reviewAPI: "/api/reviews",
 
+    googleReview: "https://search.google.com/local/writereview?placeid=ChIJiSksUmXPSjAR8eZcRVaQqKA",
 
     /*==================================================
     HERO
