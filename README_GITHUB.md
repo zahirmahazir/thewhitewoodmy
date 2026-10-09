@@ -44,3 +44,7 @@ The five links are kept separately editable:
 
 ## Responsive Booking Calendar
 The booking modal includes a built-in date-range calendar (no external calendar library required). On laptop it shows two months side by side; on mobile it uses a compact single-month view. The selected check-in and checkout are highlighted, dates between them are shaded gold, and checkout must be at least two nights after check-in. Mobile booking modal typography and spacing are reduced for smaller screens.
+
+
+## Listing Card Responsive Layout
+Listing cards now use more balanced heading and price sizing. On mobile, the price sits on its own top row and the listing title uses the full card width below it, avoiding narrow awkward line breaks. Description, amenities and action buttons are slightly smaller on mobile.

@@ -720,3 +720,81 @@ body {
   .calendar-day{font-size:10px}
   .calendar-footer{align-items:flex-start}
 }
+
+
+/* =========================================================
+   EDIT SECTION: LISTING CARD TYPOGRAPHY + RESPONSIVE LAYOUT
+   Keep listing titles readable and avoid awkward narrow wrapping.
+   ========================================================= */
+.listing-grid { align-items:stretch; }
+.card { min-width:0; overflow:hidden; }
+.card-body { min-width:0; }
+.card-top {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;
+  column-gap:14px;
+}
+.card-top > div:first-child { min-width:0; }
+.card h3 {
+  font-size:clamp(24px,2.15vw,29px);
+  line-height:1.12;
+  letter-spacing:-.015em;
+  overflow-wrap:normal;
+  word-break:normal;
+  margin:0 0 8px;
+}
+.card .price {
+  font-size:clamp(16px,1.5vw,20px);
+  line-height:1.25;
+  text-align:right;
+}
+.card .price small { display:inline; white-space:nowrap; }
+.card .desc { font-size:14px; line-height:1.65; margin:14px 0; }
+.card .amenities { gap:7px; margin:16px 0; }
+.card .tag { padding:7px 9px; font-size:11px; }
+.card-actions { flex-wrap:wrap; }
+.card-actions button { min-height:42px; }
+
+@media (max-width: 800px) {
+  .listing-grid {
+    grid-template-columns:minmax(0,1fr);
+    gap:22px;
+  }
+  .card-body { padding:20px; }
+  .card-top {
+    grid-template-columns:minmax(0,1fr);
+    gap:8px;
+  }
+  .card .price {
+    grid-row:1;
+    justify-self:end;
+    font-size:17px;
+    margin-bottom:2px;
+  }
+  .card .price small { font-size:10px; }
+  .card h3 {
+    font-size:clamp(25px,6.6vw,31px);
+    line-height:1.12;
+    max-width:100%;
+    margin:0 0 7px;
+  }
+  .card .location { font-size:12px; }
+  .card .desc {
+    font-size:13px;
+    line-height:1.55;
+    margin:13px 0;
+  }
+  .card .amenities { gap:7px; margin:14px 0; }
+  .card .tag { padding:7px 9px; font-size:10px; }
+  .card-actions { gap:8px; margin-top:17px; }
+  .card-actions button { font-size:12px; padding:11px 14px; min-height:40px; }
+}
+@media (max-width: 420px) {
+  .card-body { padding:17px; }
+  .card h3 { font-size:25px; line-height:1.13; }
+  .card .price { font-size:16px; }
+  .card .desc { font-size:12px; line-height:1.55; }
+  .card .tag { font-size:10px; padding:6px 8px; }
+  .card-actions button { font-size:11px; padding:10px 12px; }
+}
