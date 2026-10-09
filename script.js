@@ -176,10 +176,19 @@ function openDetails(id){
 function openBooking(id){
  const x=getListing(id);
  openModal(`<p class="eyebrow">BOOK YOUR STAY</p><h3>${x.name}</h3>
- <div class="booking-grid">
-   <div class="field"><label>CHECK-IN</label><input id="checkin" type="date" onchange="checkAvailability()"></div>
-   <div class="field"><label>CHECK-OUT</label><input id="checkout" type="date" onchange="checkAvailability()"></div>
-   <div class="field"><label>GUESTS</label><select id="guests"><option>1 guest</option><option>2 guests</option><option>3 guests</option><option>4 guests</option><option>5+ guests</option></select></div>
+ <div class="booking-grid booking-grid-range">
+   <div class="field date-range-field">
+     <label for="stayDates">CHECK-IN &amp; CHECK-OUT</label>
+     <input id="stayDates" type="text" placeholder="Select your stay dates" readonly>
+     <input id="checkin" type="hidden">
+     <input id="checkout" type="hidden">
+     <div class="selected-date-summary" aria-live="polite">
+       <span><small>CHECK-IN</small><strong id="checkinDisplay">Choose date</strong></span>
+       <span class="date-summary-arrow" aria-hidden="true">→</span>
+       <span><small>CHECK-OUT</small><strong id="checkoutDisplay">Choose date</strong></span>
+     </div>
+   </div>
+   <div class="field guests-field"><label>GUESTS</label><select id="guests"><option>1 guest</option><option>2 guests</option><option>3 guests</option><option>4 guests</option><option>5+ guests</option></select></div>
  </div>
  <div id="availability" class="availability">Select your dates to check availability.</div>
  <div class="summary">
@@ -190,10 +199,55 @@ function openBooking(id){
  <button class="gold-btn" style="width:100%;margin-top:20px" onclick="addBooking('${id}')">Add to booking</button>`);
  const checkin=document.getElementById("checkin");
  const checkout=document.getElementById("checkout");
- const today=new Date().toISOString().split("T")[0];
- checkin.min=today;
- checkout.min=today;
- checkin.addEventListener("change", updateCheckoutMinimum);
+ const today=new Date();
+ today.setHours(0,0,0,0);
+ if (typeof flatpickr === "function") {
+   const rangeInput=document.getElementById("stayDates");
+   if (rangeInput && rangeInput._flatpickr) rangeInput._flatpickr.destroy();
+   flatpickr(rangeInput, {
+     mode:"range",
+     minDate:today,
+     dateFormat:"Y-m-d",
+     altInput:true,
+     altFormat:"d M Y",
+     disableMobile:true,
+     showMonths:1,
+     conjunction:" → ",
+     disable:[function(date) {
+       const picker=document.getElementById("stayDates")?._flatpickr;
+       const selected=picker ? picker.selectedDates : [];
+       if (selected.length===1) {
+         const earliestCheckout=new Date(selected[0]);
+         earliestCheckout.setDate(earliestCheckout.getDate()+MINIMUM_NIGHTS);
+         earliestCheckout.setHours(0,0,0,0);
+         return date < earliestCheckout;
+       }
+       return false;
+     }],
+     onChange:function(selectedDates) {
+       const start=selectedDates[0] ? toLocalISODate(selectedDates[0]) : "";
+       const end=selectedDates[1] ? toLocalISODate(selectedDates[1]) : "";
+       checkin.value=start;
+       checkout.value=end;
+       document.getElementById("checkinDisplay").textContent=start ? formatStayDate(selectedDates[0]) : "Choose date";
+       document.getElementById("checkoutDisplay").textContent=end ? formatStayDate(selectedDates[1]) : "Choose date";
+       updateCheckoutMinimum();
+       checkAvailability();
+     }
+   });
+ } else {
+   const rangeInput=document.getElementById("stayDates");
+   rangeInput.placeholder="Calendar unavailable — refresh and try again";
+ }
+}
+function toLocalISODate(date) {
+ const y=date.getFullYear();
+ const m=String(date.getMonth()+1).padStart(2,"0");
+ const d=String(date.getDate()).padStart(2,"0");
+ return `${y}-${m}-${d}`;
+}
+function formatStayDate(date) {
+ return date.toLocaleDateString("en-MY",{day:"numeric",month:"short",year:"numeric"});
 }
 function updateCheckoutMinimum(){
  const checkin=document.getElementById("checkin");
@@ -201,7 +255,7 @@ function updateCheckoutMinimum(){
  if(!checkin || !checkout || !checkin.value) return;
  const minCheckout=new Date(checkin.value + "T00:00:00");
  minCheckout.setDate(minCheckout.getDate()+MINIMUM_NIGHTS);
- const minValue=minCheckout.toISOString().split("T")[0];
+ const minValue=toLocalISODate(minCheckout);
  checkout.min=minValue;
  if(checkout.value && checkout.value < minValue){
    checkout.value="";
