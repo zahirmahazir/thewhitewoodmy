@@ -173,13 +173,23 @@ function openDetails(id){
 }
 
 /* EDIT SECTION: AVAILABILITY + BOOKING MODAL */
+/* EDIT SECTION: RESPONSIVE BOOKING DATE-RANGE CALENDAR */
+let calendarViewDate = new Date();
+calendarViewDate.setDate(1);
+calendarViewDate.setHours(0,0,0,0);
+
 function openBooking(id){
  const x=getListing(id);
+ calendarViewDate = new Date();
+ calendarViewDate.setDate(1);
+ calendarViewDate.setHours(0,0,0,0);
  openModal(`<p class="eyebrow">BOOK YOUR STAY</p><h3>${x.name}</h3>
  <div class="booking-grid booking-grid-range">
    <div class="field date-range-field">
-     <label for="stayDates">CHECK-IN &amp; CHECK-OUT</label>
-     <input id="stayDates" type="text" placeholder="Select your stay dates" readonly>
+     <label>SELECT CHECK-IN &amp; CHECK-OUT</label>
+     <button type="button" id="dateRangeToggle" class="date-range-toggle" onclick="toggleDateCalendar()">
+       <span id="dateRangeLabel">Choose your dates</span><span aria-hidden="true">▦</span>
+     </button>
      <input id="checkin" type="hidden">
      <input id="checkout" type="hidden">
      <div class="selected-date-summary" aria-live="polite">
@@ -187,6 +197,7 @@ function openBooking(id){
        <span class="date-summary-arrow" aria-hidden="true">→</span>
        <span><small>CHECK-OUT</small><strong id="checkoutDisplay">Choose date</strong></span>
      </div>
+     <div id="dateRangeCalendar" class="date-range-calendar" aria-label="Choose stay dates"></div>
    </div>
    <div class="field guests-field"><label>GUESTS</label><select id="guests"><option>1 guest</option><option>2 guests</option><option>3 guests</option><option>4 guests</option><option>5+ guests</option></select></div>
  </div>
@@ -197,70 +208,106 @@ function openBooking(id){
    <div id="estimate" class="summary-row total"><span>Estimated total</span><strong>-</strong></div>
  </div>
  <button class="gold-btn" style="width:100%;margin-top:20px" onclick="addBooking('${id}')">Add to booking</button>`);
- const checkin=document.getElementById("checkin");
- const checkout=document.getElementById("checkout");
- const today=new Date();
- today.setHours(0,0,0,0);
- if (typeof flatpickr === "function") {
-   const rangeInput=document.getElementById("stayDates");
-   if (rangeInput && rangeInput._flatpickr) rangeInput._flatpickr.destroy();
-   flatpickr(rangeInput, {
-     mode:"range",
-     minDate:today,
-     dateFormat:"Y-m-d",
-     altInput:true,
-     altFormat:"d M Y",
-     disableMobile:true,
-     showMonths:1,
-     conjunction:" → ",
-     disable:[function(date) {
-       const picker=document.getElementById("stayDates")?._flatpickr;
-       const selected=picker ? picker.selectedDates : [];
-       if (selected.length===1) {
-         const earliestCheckout=new Date(selected[0]);
-         earliestCheckout.setDate(earliestCheckout.getDate()+MINIMUM_NIGHTS);
-         earliestCheckout.setHours(0,0,0,0);
-         return date < earliestCheckout;
-       }
-       return false;
-     }],
-     onChange:function(selectedDates) {
-       const start=selectedDates[0] ? toLocalISODate(selectedDates[0]) : "";
-       const end=selectedDates[1] ? toLocalISODate(selectedDates[1]) : "";
-       checkin.value=start;
-       checkout.value=end;
-       document.getElementById("checkinDisplay").textContent=start ? formatStayDate(selectedDates[0]) : "Choose date";
-       document.getElementById("checkoutDisplay").textContent=end ? formatStayDate(selectedDates[1]) : "Choose date";
-       updateCheckoutMinimum();
-       checkAvailability();
-     }
-   });
- } else {
-   const rangeInput=document.getElementById("stayDates");
-   rangeInput.placeholder="Calendar unavailable — refresh and try again";
- }
+ renderDateRangeCalendar();
 }
-function toLocalISODate(date) {
- const y=date.getFullYear();
- const m=String(date.getMonth()+1).padStart(2,"0");
- const d=String(date.getDate()).padStart(2,"0");
+
+function localISODate(date){
+ const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,"0"), d=String(date.getDate()).padStart(2,"0");
  return `${y}-${m}-${d}`;
 }
-function formatStayDate(date) {
- return date.toLocaleDateString("en-MY",{day:"numeric",month:"short",year:"numeric"});
+function parseLocalDate(value){
+ if(!value) return null;
+ const [y,m,d]=value.split("-").map(Number);
+ return new Date(y,m-1,d);
+}
+function formatStayDate(value){
+ const date=typeof value==="string" ? parseLocalDate(value) : value;
+ return date ? date.toLocaleDateString("en-MY",{day:"numeric",month:"short",year:"numeric"}) : "Choose date";
+}
+function toggleDateCalendar(){
+ const cal=document.getElementById("dateRangeCalendar");
+ if(!cal) return;
+ cal.classList.toggle("is-open");
+ renderDateRangeCalendar();
+}
+function changeCalendarMonth(delta){
+ calendarViewDate.setMonth(calendarViewDate.getMonth()+delta);
+ renderDateRangeCalendar();
+}
+function selectCalendarDate(value){
+ const checkin=document.getElementById("checkin");
+ const checkout=document.getElementById("checkout");
+ if(!checkin || !checkout) return;
+ const picked=parseLocalDate(value);
+ const today=new Date(); today.setHours(0,0,0,0);
+ if(picked < today) return;
+
+ if(!checkin.value || checkout.value){
+   checkin.value=value;
+   checkout.value="";
+ } else {
+   const startDate=parseLocalDate(checkin.value);
+   const minCheckout=new Date(startDate);
+   minCheckout.setDate(minCheckout.getDate()+MINIMUM_NIGHTS);
+   if(picked < minCheckout){
+     checkin.value=value;
+     checkout.value="";
+   } else {
+     checkout.value=value;
+     const cal=document.getElementById("dateRangeCalendar");
+     if(cal) cal.classList.remove("is-open");
+   }
+ }
+ syncSelectedDateSummary();
+ renderDateRangeCalendar();
+ updateCheckoutMinimum();
+ checkAvailability();
+}
+function syncSelectedDateSummary(){
+ const a=document.getElementById("checkin")?.value || "";
+ const b=document.getElementById("checkout")?.value || "";
+ const aDisplay=document.getElementById("checkinDisplay");
+ const bDisplay=document.getElementById("checkoutDisplay");
+ const label=document.getElementById("dateRangeLabel");
+ if(aDisplay) aDisplay.textContent=formatStayDate(a);
+ if(bDisplay) bDisplay.textContent=formatStayDate(b);
+ if(label) label.textContent=a && b ? `${formatStayDate(a)} → ${formatStayDate(b)}` : a ? `${formatStayDate(a)} → Select checkout` : "Choose your dates";
+}
+function calendarMonthHTML(monthDate){
+ const year=monthDate.getFullYear(), month=monthDate.getMonth();
+ const first=new Date(year,month,1);
+ const daysInMonth=new Date(year,month+1,0).getDate();
+ const mondayOffset=(first.getDay()+6)%7;
+ const checkin=document.getElementById("checkin")?.value || "";
+ const checkout=document.getElementById("checkout")?.value || "";
+ const today=new Date(); today.setHours(0,0,0,0);
+ let days="";
+ for(let i=0;i<mondayOffset;i++) days+='<span class="calendar-day empty" aria-hidden="true"></span>';
+ for(let day=1;day<=daysInMonth;day++){
+   const date=new Date(year,month,day);
+   const value=localISODate(date);
+   const disabled=date<today;
+   const isStart=value===checkin, isEnd=value===checkout;
+   const inRange=checkin && checkout && value>checkin && value<checkout;
+   const classes=["calendar-day",isStart?"range-start":"",isEnd?"range-end":"",inRange?"range-middle":"",disabled?"is-disabled":""].filter(Boolean).join(" ");
+   days+=`<button type="button" class="${classes}" ${disabled?'disabled':''} onclick="selectCalendarDate('${value}')" aria-label="${formatStayDate(value)}">${day}</button>`;
+ }
+ return `<section class="calendar-month"><h4>${monthDate.toLocaleDateString("en-MY",{month:"long",year:"numeric"})}</h4><div class="calendar-weekdays"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div><div class="calendar-days">${days}</div></section>`;
+}
+function renderDateRangeCalendar(){
+ const cal=document.getElementById("dateRangeCalendar");
+ if(!cal) return;
+ const next=new Date(calendarViewDate); next.setMonth(next.getMonth()+1);
+ cal.innerHTML=`<div class="calendar-toolbar"><button type="button" aria-label="Previous month" onclick="changeCalendarMonth(-1)">‹</button><button type="button" aria-label="Next month" onclick="changeCalendarMonth(1)">›</button></div><div class="calendar-months">${calendarMonthHTML(calendarViewDate)}${calendarMonthHTML(next)}</div><div class="calendar-footer"><span>${document.getElementById("checkin")?.value && !document.getElementById("checkout")?.value ? `Choose checkout (minimum ${MINIMUM_NIGHTS} nights)` : "Select check-in, then check-out"}</span><button type="button" onclick="document.getElementById('dateRangeCalendar').classList.remove('is-open')">Done</button></div>`;
 }
 function updateCheckoutMinimum(){
  const checkin=document.getElementById("checkin");
  const checkout=document.getElementById("checkout");
  if(!checkin || !checkout || !checkin.value) return;
- const minCheckout=new Date(checkin.value + "T00:00:00");
+ const minCheckout=parseLocalDate(checkin.value);
  minCheckout.setDate(minCheckout.getDate()+MINIMUM_NIGHTS);
- const minValue=toLocalISODate(minCheckout);
- checkout.min=minValue;
- if(checkout.value && checkout.value < minValue){
-   checkout.value="";
- }
- checkAvailability();
+ if(checkout.value && parseLocalDate(checkout.value)<minCheckout) checkout.value="";
+ syncSelectedDateSummary();
 }
 function nights(){
  const a=document.getElementById("checkin")?.value,b=document.getElementById("checkout")?.value;

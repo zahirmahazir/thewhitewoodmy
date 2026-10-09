@@ -42,5 +42,5 @@ The five links are kept separately editable:
 - Google Maps
 
 
-## Booking Date Range Calendar
-The booking modal now uses one range calendar. Check-in and check-out are highlighted, with a soft gold highlight between them. The minimum two-night stay is enforced during selection. Flatpickr is loaded from jsDelivr, so the live website needs internet access for the calendar library.
+## Responsive Booking Calendar
+The booking modal includes a built-in date-range calendar (no external calendar library required). On laptop it shows two months side by side; on mobile it uses a compact single-month view. The selected check-in and checkout are highlighted, dates between them are shaded gold, and checkout must be at least two nights after check-in. Mobile booking modal typography and spacing are reduced for smaller screens.
