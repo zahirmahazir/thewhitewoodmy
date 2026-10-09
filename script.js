@@ -1,523 +1,466 @@
-/*==================================================
-THE WHITE WOOD HOMESTAY
-SCRIPT.JS
-PART 1
-==================================================*/
+// ========================================
+// EDIT SECTION: GALLERY / SLIDER BEHAVIOUR
+// ========================================
+const GALLERY_AUTO_SLIDE_MS = 4000; // Auto-slide every 4 seconds
+const GALLERY_PAUSE_AFTER_INTERACTION_MS = 6500;
 
-"use strict";
 
-/*==================================================
-CONFIG
-==================================================*/
+// ========================================
+// EDIT SECTION: GENERAL BOOKING SETTINGS
+// ========================================
+const MINIMUM_NIGHTS = 2;
 
-document.addEventListener("DOMContentLoaded", () => {
+/*
+=========================================================
+THE WHITE WOOD — JAVASCRIPT EDIT GUIDE
+Search for "EDIT SECTION" to find the main editable areas.
+=========================================================
+*/
 
-    initializeLinks();
+/*
+=========================================================
+EDIT GUIDE: EACH LISTING IS INDEPENDENT
+---------------------------------------------------------
+The White Wood:
+  buttons: { availability, details, showAvailability, showDetails }
 
-    initializeSlider();
+Rumah Puteh:
+  buttons: { availability, details, showAvailability, showDetails }
 
-    initializeHeader();
+You can change one listing without changing the other.
+Example:
+  availability:"Book now"
+  details:"View details"
+  showAvailability:false
+  showDetails:true
+=========================================================
+*/
 
-    initializeMobileMenu();
+/* =====================================================
+   EDIT SECTION: HOMESTAY DATA
+   - Change name, location, price and gallery labels here.
+   - Change amenities here.
+   - The White Wood pricing uses the multi-night formula below.
+   ===================================================== */
+const listings = [
+  {
+    id:"white-wood",
+    name:"The White Wood Homestay",
+    location:"Penang, Malaysia",
 
-    initializeReveal();
+    // EDIT SECTION: THE WHITE WOOD PRICING
+    pricing:{
+      firstNight:230,
+      nextNight:220,
+      discountPerExtraNight:10
+    },
 
-    initializeLightbox();
+    images:["assets/images/white-wood/whitewood1.jpg","assets/images/white-wood/whitewood2.jpg","assets/images/white-wood/whitewood3.jpg"],
+    desc:"A bright and comfortable homestay for families, couples and small groups.",
+    amenities:["WiFi","Air conditioning","Parking","Kitchen"],
 
-    initializeSmoothScroll();
+    // EDIT SECTION: THE WHITE WOOD BUTTONS
+    buttons:{
+      availability:"Check availability",
+      details:"Details",
+      showAvailability:true,
+      showDetails:true
+    }
+  },
 
-});
+  {
+    id:"rumah-puteh",
+    name:"Coming Soon",
+    location:"Stay Tuned",
 
-/*==================================================
-GLOBAL CONFIG
-==================================================*/
+    // EDIT SECTION: RUMAH PUTEH PRICING
+    pricing:{
+      firstNight:150,
+      nextNight:150,
+      discountPerExtraNight:0
+    },
 
-function initializeLinks() {
+    images:["assets/images/rumah-puteh/rumahputeh1.jpg","assets/images/rumah-puteh/rumahputeh2.jpg","assets/images/rumah-puteh/rumahputeh3.jpg"],
+    desc:"Coming soon. For your next stay.",
+    amenities:["WiFi","Air conditioning","Parking","Family friendly"],
 
-    if (typeof CONFIG === "undefined") return;
+    // EDIT SECTION: RUMAH PUTEH BUTTONS
+    buttons:{
+      availability:"Check availability",
+      details:"Details",
+      showAvailability:true,
+      showDetails:true
+    }
+  }
+];
 
-    const setHref = (id, value) => {
+let cart = JSON.parse(localStorage.getItem("ww_cart") || "[]");
 
-        const el = document.getElementById(id);
+function money(n){return "RM " + n.toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2})}
 
-        if (el) el.href = value;
 
-    };
+const amenityIcons = {
+  "WiFi": `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 8.8a13.5 13.5 0 0 1 17 0M6.7 12.1a8.5 8.5 0 0 1 10.6 0M9.8 15.3a4 4 0 0 1 4.4 0M12 19h.01"/></svg>`,
+  "Air conditioning": `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M6 5v3M12 5v3M18 5v3M12 8v11M8 13l-2 2M16 13l2 2M9 19h6"/></svg>`,
+  "Parking": `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V4h6a4 4 0 0 1 0 8H7M17 20h2M5 20h14"/></svg>`,
+  "Kitchen": `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v7M8 4v7M5 8h3M6.5 11v9M13 4v16M17 4v16M13 9h6"/></svg>`,
+  "Family friendly": `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="7" r="2.5"/><circle cx="16" cy="7" r="2.5"/><path d="M3.5 19a4.5 4.5 0 0 1 9 0M11.5 19a4.5 4.5 0 0 1 9 0"/></svg>`
+};
+function amenityHTML(a){
+  return `<span class="amenity-icon" title="${a}">${amenityIcons[a] || `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/></svg>`}<span>${a}</span></span>`;
+}
 
-    setHref("heroWhatsapp", CONFIG.whatsapp);
 
-    setHref("headerWhatsapp", CONFIG.whatsapp);
+/* =====================================================
+   PRICING CALCULATION
+   Each listing has its own pricing section above.
+   Edit "THE WHITE WOOD PRICING" or "RUMAH PUTEH PRICING"
+   without affecting the other listing.
+   ===================================================== */
+function getStayPricing(x, nights){
+  if(!nights || nights <= 0) return {gross:0, discount:0, total:0};
 
-    setHref("contactWhatsapp", CONFIG.whatsapp);
+  const p = x.pricing;
+  const gross = p.firstNight + Math.max(0, nights - 1) * p.nextNight;
+  const discount = Math.max(0, nights - 1) * p.discountPerExtraNight;
 
-    setHref("heroAirbnb", CONFIG.airbnb);
+  return {
+    gross,
+    discount,
+    total:gross - discount
+  };
+}
 
-    setHref("contactAirbnb", CONFIG.airbnb);
+function renderListings(){
+  document.getElementById("listingGrid").innerHTML = listings.map(x=>`
+    <article class="card">
+      <div class="gallery listing-gallery" data-gallery="${x.id}">
+        <div class="gallery-track">
+          ${x.images.map((img,i)=>`<div class="gallery-slide card-img"><img src="${img}" alt="${x.name} image ${i+1}" loading="lazy"></div>`).join("")}
+        </div>
+        <button class="gallery-prev" aria-label="Previous image">‹</button>
+        <button class="gallery-next" aria-label="Next image">›</button>
+        <div class="gallery-counter">1 / ${x.images.length}</div>
+        <div class="gallery-dots"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-top"><div><h3>${x.name}</h3><div class="location">${x.location}</div></div><div class="price">${money(x.pricing.firstNight)}<small>/1st night</small></div></div>
+        <p class="desc">${x.desc}</p>
+        <div class="amenities">${x.amenities.map(amenityHTML).join("")}</div>
+        <div class="card-actions">
+          ${x.buttons?.showAvailability !== false ? `<button class="gold-btn" onclick="openBooking('${x.id}')">${x.buttons?.availability || "Check availability"}</button>` : ""}
+          ${x.buttons?.showDetails !== false ? `<button class="outline-btn" onclick="openDetails('${x.id}')">${x.buttons?.details || "Details"}</button>` : ""}
+        </div>
+      </div>
+    </article>`).join("");
+}
+function openModal(html){document.getElementById("modalContent").innerHTML=html;document.getElementById("modal").classList.remove("hidden")}
+function closeModal(){document.getElementById("modal").classList.add("hidden")}
+function getListing(id){return listings.find(x=>x.id===id)}
 
-    setHref("airbnbLink", CONFIG.airbnb);
+function openDetails(id){
+ const x=getListing(id);
+ openModal(`<p class="eyebrow">LISTING</p><h3>${x.name}</h3><p class="location">${x.location}</p>
+ <div class="gallery modal-gallery" data-gallery="details-${x.id}">
+   <div class="gallery-track">${x.images.map((img,i)=>`<div class="gallery-slide card-img"><img src="${img}" alt="${x.name} image ${i+1}" loading="lazy"></div>`).join("")}</div>
+   <button class="gallery-prev" aria-label="Previous image">‹</button>
+   <button class="gallery-next" aria-label="Next image">›</button>
+   <div class="gallery-counter">1 / ${x.images.length}</div>
+   <div class="gallery-dots"></div>
+ </div>
+ <p class="desc">${x.desc}</p><div class="amenities">${x.amenities.map(amenityHTML).join("")}</div><button class="gold-btn" onclick="openBooking('${id}')">Check availability & book</button>`);
+ initGalleries(document.getElementById("modalContent"));
+}
 
-    setHref("contactEmail", CONFIG.email);
+/* EDIT SECTION: AVAILABILITY + BOOKING MODAL */
+function openBooking(id){
+ const x=getListing(id);
+ openModal(`<p class="eyebrow">BOOK YOUR STAY</p><h3>${x.name}</h3>
+ <div class="booking-grid">
+   <div class="field"><label>CHECK-IN</label><input id="checkin" type="date" onchange="checkAvailability()"></div>
+   <div class="field"><label>CHECK-OUT</label><input id="checkout" type="date" onchange="checkAvailability()"></div>
+   <div class="field"><label>GUESTS</label><select id="guests"><option>1 guest</option><option>2 guests</option><option>3 guests</option><option>4 guests</option><option>5+ guests</option></select></div>
+ </div>
+ <div id="availability" class="availability">Select your dates to check availability.</div>
+ <div class="summary">
+   <div id="nightBreakdown"></div>
+   <div id="discountRow"></div>
+   <div id="estimate" class="summary-row total"><span>Estimated total</span><strong>-</strong></div>
+ </div>
+ <button class="gold-btn" style="width:100%;margin-top:20px" onclick="addBooking('${id}')">Add to booking</button>`);
+ const checkin=document.getElementById("checkin");
+ const checkout=document.getElementById("checkout");
+ const today=new Date().toISOString().split("T")[0];
+ checkin.min=today;
+ checkout.min=today;
+ checkin.addEventListener("change", updateCheckoutMinimum);
+}
+function updateCheckoutMinimum(){
+ const checkin=document.getElementById("checkin");
+ const checkout=document.getElementById("checkout");
+ if(!checkin || !checkout || !checkin.value) return;
+ const minCheckout=new Date(checkin.value + "T00:00:00");
+ minCheckout.setDate(minCheckout.getDate()+MINIMUM_NIGHTS);
+ const minValue=minCheckout.toISOString().split("T")[0];
+ checkout.min=minValue;
+ if(checkout.value && checkout.value < minValue){
+   checkout.value="";
+ }
+ checkAvailability();
+}
+function nights(){
+ const a=document.getElementById("checkin")?.value,b=document.getElementById("checkout")?.value;
+ if(!a||!b)return 0;
+ return Math.max(0,(new Date(b)-new Date(a))/86400000);
+}
+function cartHasOverlap(listingId, checkin, checkout){
+  return cart.some(item =>
+    item.listingId === listingId &&
+    checkin < item.checkout &&
+    checkout > item.checkin
+  );
+}
 
-    setHref("emailLink", CONFIG.email);
+function checkAvailability(){
+ const n=nights(), box=document.getElementById("availability"), est=document.getElementById("estimate");
+ const breakdown=document.getElementById("nightBreakdown"), discountRow=document.getElementById("discountRow");
+ if(!n){
+   box.className="availability";box.textContent="Select valid check-in and check-out dates.";
+   if(est)est.innerHTML="<span>Estimated total</span><strong>-</strong>";
+   if(breakdown)breakdown.innerHTML="";
+   if(discountRow)discountRow.innerHTML="";
+   return;
+ }
+ if(n < MINIMUM_NIGHTS){
+   box.className="availability unavailable";
+   box.innerHTML=`❌ Minimum stay is ${MINIMUM_NIGHTS} nights.<br>Please select at least ${MINIMUM_NIGHTS} nights.`;
+   if(est)est.innerHTML="<span>Estimated total</span><strong>-</strong>";
+   if(breakdown)breakdown.innerHTML="";
+   if(discountRow)discountRow.innerHTML="";
+   return;
+ }
+ const id=window.currentBookingId, x=getListing(id);
+ const a=document.getElementById("checkin")?.value;
+ const b=document.getElementById("checkout")?.value;
+ const overlap=cartHasOverlap(id,a,b);
 
-    setHref("contactMaps", CONFIG.maps);
+ if(overlap){
+   box.className="availability unavailable";
+   box.innerHTML='❌ These dates overlap with another booking in your cart.<br>Please review your cart.';
+ } else {
+   box.className="availability";
+   box.innerHTML='<span class="available">✓ Available</span> — This is mock availability for the prototype.';
+ }
 
-    setHref("mapsButton", CONFIG.maps);
+ const p=getStayPricing(x,n);
+ if(breakdown){
+   breakdown.innerHTML = `<div class="summary-row"><span>${n} night${n>1?"s":""}</span><strong>${money(p.gross)}</strong></div>`;
+ }
+ if(discountRow){
+   discountRow.innerHTML = p.discount > 0
+     ? `<div class="summary-row discount-row"><span>Multi-night discount</span><strong>− ${money(p.discount)}</strong></div>`
+     : "";
+ }
+ if(est)est.innerHTML=`<span>Estimated total (${n} night${n>1?"s":""})</span><strong class="gold">${money(p.total)}</strong>`;
+}
+window.currentBookingId=null;
+const oldOpenBooking=openBooking;
+openBooking=function(id){window.currentBookingId=id;oldOpenBooking(id)}
 
-    setHref("mapsLink", CONFIG.maps);
+/* EDIT SECTION: ADD BOOKING TO CART */
+function addBooking(id){
+ const a=document.getElementById("checkin").value,b=document.getElementById("checkout").value,n=nights();
+ if(!a||!b||n<=0){showToast("Please select valid check-in and check-out dates.");return}
+ if(n < MINIMUM_NIGHTS){
+   const box=document.getElementById("availability");
+   if(box){
+     box.className="availability unavailable";
+     box.innerHTML=`❌ Minimum stay is ${MINIMUM_NIGHTS} nights.<br>Please select at least ${MINIMUM_NIGHTS} nights.`;
+   }
+   return;
+ }
+ if(cartHasOverlap(id,a,b)){
+   const box=document.getElementById("availability");
+   if(box){
+     box.className="availability unavailable";
+     box.innerHTML='❌ These dates overlap with another booking in your cart.<br>Please review your cart.';
+   }
+   return;
+ }
+ const x=getListing(id);
+ const pricing=getStayPricing(x,n);
+ cart=[{id:crypto.randomUUID(),listingId:id,name:x.name,checkin:a,checkout:b,nights:n,guests:document.getElementById("guests").value,total:pricing.total,discount:pricing.discount},...cart];
+ saveCart();closeModal();showToast("Stay added to your booking.");
+}
+function saveCart(){localStorage.setItem("ww_cart",JSON.stringify(cart));document.getElementById("cartCount").textContent=cart.length}
+/* EDIT SECTION: CART / BOOKING SUMMARY */
+function openCart(){
+ if(!cart.length){openModal('<p class="eyebrow">YOUR BOOKING</p><h3>Your cart is empty</h3><p class="desc">Choose a homestay and check your dates to start a booking.</p><a class="gold-btn" href="#listings" onclick="closeModal()">Browse listings</a>');return}
+ const total=cart.reduce((s,x)=>s+x.total,0);
+ openModal(`<p class="eyebrow">YOUR BOOKING</p><h3>Review your stay</h3>
+ <div class="checkout-items">${cart.map(x=>`<div class="summary-row"><span><strong>${x.name}</strong><br><small>${x.checkin} → ${x.checkout} · ${x.guests}${x.discount ? ` · Discount −${money(x.discount)}` : ""}</small></span><strong class="gold">${money(x.total)}</strong></div>`).join("")}</div>
+ <div class="summary"><div class="summary-row total"><span>Total</span><strong class="gold">${money(total)}</strong></div></div>
+ <button class="gold-btn" style="width:100%;margin-top:20px" onclick="checkout()">Proceed to payment</button>
+ <button class="outline-btn" style="width:100%;margin-top:10px" onclick="clearCart()">Clear booking</button>`);
+}
+/* EDIT SECTION: CHECKOUT / PAYMENT PAGE */
+function checkout(){
+ const total=cart.reduce((s,x)=>s+x.total,0);
+ openModal(`<p class="eyebrow">CHECKOUT</p><h3>Payment details</h3>
+ <div class="checkout-items">${cart.map(x=>`<div class="summary-row"><span>${x.name}<br><small>${x.checkin} → ${x.checkout}</small></span><strong class="gold">${money(x.total)}</strong></div>`).join("")}</div>
+ <div class="checkout-form">
+   <input placeholder="Full name">
+   <input type="email" placeholder="Email address">
+   <input placeholder="Phone number">
+   <div class="pay-note">Payment gateway is mocked in this prototype. Later this button can be connected to Stripe, ToyyibPay, Billplz, FPX or another Malaysian payment provider.</div>
+   <button class="gold-btn" onclick="payMock()">Pay ${money(total)}</button>
+ </div>`);
+}
+/* EDIT SECTION: PAYMENT GATEWAY
+   Replace this mock function with your real payment provider later. */
+function payMock(){
+ const ref="WW"+Date.now().toString().slice(-8);
+ cart=[];saveCart();
+ openModal(`<div style="text-align:center;padding:35px 0"><div style="font-size:45px;color:var(--gold)">✓</div><p class="eyebrow">BOOKING RECEIVED</p><h3>Thank you.</h3><p class="desc">Prototype payment successful.<br>Reference: <strong>${ref}</strong></p><button class="gold-btn" onclick="closeModal()">Done</button></div>`);
+}
+function clearCart(){cart=[];saveCart();closeModal();showToast("Booking cleared.")}
+function showToast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2200)}
 
-    setHref("instagramLink", CONFIG.instagram);
+/* EDIT SECTION: GALLERY / SLIDER BEHAVIOUR */
+function initGalleries(root=document){
+  root.querySelectorAll(".gallery").forEach(gallery=>{
+    if(gallery.dataset.ready==="1") return;
+    gallery.dataset.ready="1";
 
-    setHref("tiktokLink", CONFIG.tiktok);
+    const track=gallery.querySelector(".gallery-track");
+    const slides=[...gallery.querySelectorAll(".gallery-slide")];
+    const dots=gallery.querySelector(".gallery-dots");
+    const counter=gallery.querySelector(".gallery-counter");
+    let current=0, startX=0, deltaX=0;
 
-    setHref("googleReviewButton", CONFIG.googleReview);
+    slides.forEach((_,i)=>{
+      const dot=document.createElement("button");
+      dot.type="button";
+      dot.className="gallery-dot"+(i===0?" active":"");
+      dot.setAttribute("aria-label",`Go to image ${i+1}`);
+      dot.onclick=()=>go(i);
+      dots.appendChild(dot);
+    });
 
-    const iframe = document.getElementById("googleMap");
-
-    if (iframe && CONFIG.googleMapEmbed) {
-
-        iframe.src = CONFIG.googleMapEmbed;
-
+    function go(i){
+      current=(i+slides.length)%slides.length;
+      track.style.transform=`translate3d(-${current*100}%,0,0)`;
+      dots.querySelectorAll(".gallery-dot").forEach((d,n)=>d.classList.toggle("active",n===current));
+      if(counter) counter.textContent=`${current+1} / ${slides.length}`;
     }
 
+    gallery.querySelector(".gallery-prev").onclick=()=>go(current-1);
+    gallery.querySelector(".gallery-next").onclick=()=>go(current+1);
+
+    track.addEventListener("pointerdown",e=>{
+      startX=e.clientX; deltaX=0;
+      track.setPointerCapture?.(e.pointerId);
+    });
+    track.addEventListener("pointermove",e=>{if(startX) deltaX=e.clientX-startX});
+    track.addEventListener("pointerup",()=>{
+      if(Math.abs(deltaX)>45) go(current+(deltaX<0?1:-1));
+      startX=0; deltaX=0;
+    });
+    track.addEventListener("pointercancel",()=>{startX=0;deltaX=0});
+    go(0);
+  });
 }
 
-/*==================================================
-BACKGROUND SLIDER
-==================================================*/
+renderListings();
+initGalleries();
+saveCart();
 
-function initializeSlider() {
 
-    const slides = document.querySelectorAll(".hero-slider__image");
-
-    if (!slides.length) return;
-
-    let current = 0;
-
-    setInterval(() => {
-
-        slides[current].classList.remove("active");
-
-        current++;
-
-        if (current >= slides.length) {
-
-            current = 0;
-
-        }
-
-        slides[current].classList.add("active");
-
-    }, 7000);
-
+// Minimum-stay validation helper
+function validateMinimumNights(nights) {
+  if (nights < MINIMUM_NIGHTS) {
+    alert(`Minimum stay is ${MINIMUM_NIGHTS} nights.\nPlease select at least ${MINIMUM_NIGHTS} nights.`);
+    return false;
+  }
+  return true;
 }
 
-/*==================================================
-HEADER
-==================================================*/
 
-function initializeHeader() {
+/* ========================================
+   AUTO SLIDE GALLERY
+   - 4 second interval
+   - pauses while hovered/touched
+   - resets timer after manual interaction
+   ======================================== */
+(function initGalleryAutoSlide(){
+  const INTERVAL = typeof GALLERY_AUTO_SLIDE_MS !== 'undefined' ? GALLERY_AUTO_SLIDE_MS : 4000;
+  const galleries = document.querySelectorAll(
+    '.gallery, .hero-gallery, .listing-gallery, [data-gallery], .details-gallery, .modal-gallery'
+  );
 
-    const header = document.querySelector(".header");
+  galleries.forEach(gallery => {
+    let timer = null;
+    let resumeTimer = null;
+    let paused = false;
 
-    if (!header) return;
+    const getNextButton = () =>
+      gallery.querySelector(
+        '[data-gallery-next], .gallery-next, .next, .slider-next, button[aria-label*="Next"], button[aria-label*="next"]'
+      );
 
-    const update = () => {
-
-        if (window.scrollY > 80) {
-
-            header.classList.add("scrolled");
-
-        }
-
-        else {
-
-            header.classList.remove("scrolled");
-
-        }
-
+    const start = () => {
+      clearInterval(timer);
+      if (paused) return;
+      timer = setInterval(() => {
+        const next = getNextButton();
+        if (next && !next.disabled) next.click();
+      }, INTERVAL);
     };
 
-    update();
-
-    window.addEventListener("scroll", update);
-
-}
-
-/*==================================================
-MOBILE MENU
-==================================================*/
-
-function initializeMobileMenu() {
-
-    const button = document.querySelector(".mobile-menu");
-
-    const nav = document.querySelector(".navigation");
-
-    if (!button || !nav) return;
-
-    button.addEventListener("click", () => {
-
-        nav.classList.toggle("active");
-
-        document.body.classList.toggle("no-scroll");
-
-    });
-
-    document
-
-        .querySelectorAll(".navigation a")
-
-        .forEach(link => {
-
-            link.addEventListener("click", () => {
-
-                nav.classList.remove("active");
-
-                document.body.classList.remove("no-scroll");
-
-            });
-
-        });
-
-}
-
-/*==================================================
-REVEAL ANIMATION
-==================================================*/
-
-function initializeReveal() {
-
-    const elements = document.querySelectorAll(
-
-        ".section,.facility-card,.gallery-card,.review-card,.contact-card"
-
-    );
-
-    const observer = new IntersectionObserver(
-
-        entries => {
-
-            entries.forEach(entry => {
-
-                if (entry.isIntersecting) {
-
-                    entry.target.classList.add("active");
-
-                }
-
-            });
-
-        },
-
-        {
-
-            threshold:0.15
-
-        }
-
-    );
-
-    elements.forEach(item => {
-
-        item.classList.add("reveal");
-
-        observer.observe(item);
-
-    });
-
-}
-/*==================================================
-LIGHTBOX
-==================================================*/
-
-function initializeLightbox() {
-
-    const lightbox = document.getElementById("lightbox");
-
-    const image = document.getElementById("lightboxImage");
-
-    const close = document.querySelector(".lightbox__close");
-
-    const gallery = document.querySelectorAll(".gallery-card");
-
-    if (!lightbox || !image || !gallery.length) return;
-
-    gallery.forEach(card => {
-
-        card.addEventListener("click", e => {
-
-            e.preventDefault();
-
-            const img = card.querySelector("img");
-
-            if (!img) return;
-
-            image.src = img.src;
-
-            image.alt = img.alt;
-
-            lightbox.classList.add("active");
-
-            document.body.classList.add("no-scroll");
-
-        });
-
-    });
-
-    const closeLightbox = () => {
-
-        lightbox.classList.remove("active");
-
-        document.body.classList.remove("no-scroll");
-
-        setTimeout(() => {
-
-            image.src = "";
-
-        },300);
-
+    const pause = () => {
+      paused = true;
+      clearInterval(timer);
     };
 
-    close.addEventListener("click", closeLightbox);
-
-    lightbox.addEventListener("click", e => {
-
-        if(e.target===lightbox){
-
-            closeLightbox();
-
-        }
-
-    });
-
-    document.addEventListener("keydown",e=>{
-
-        if(e.key==="Escape"){
-
-            closeLightbox();
-
-        }
-
-    });
-
-}
-
-/*==================================================
-SMOOTH SCROLL
-==================================================*/
-
-function initializeSmoothScroll(){
-
-    const links=document.querySelectorAll('a[href^="#"]');
-
-    links.forEach(link=>{
-
-        link.addEventListener("click",function(e){
-
-            const target=document.querySelector(this.getAttribute("href"));
-
-            if(!target) return;
-
-            e.preventDefault();
-
-            target.scrollIntoView({
-
-                behavior:"smooth",
-
-                block:"start"
-
-            });
-
-        });
-
-    });
-
-}
-
-/*==================================================
-AUTO FOOTER YEAR
-==================================================*/
-
-(function(){
-
-    const footer=document.querySelector(".footer__copyright");
-
-    if(!footer) return;
-
-    const year=new Date().getFullYear();
-
-    footer.innerHTML=
-
-    `© ${year} The White Wood Homestay. All Rights Reserved.`;
-
-})();
-
-/*==================================================
-PRELOAD GALLERY
-==================================================*/
-
-(function(){
-
-    const images=document.querySelectorAll(".gallery-card img");
-
-    images.forEach(img=>{
-
-        const preload=new Image();
-
-        preload.src=img.src;
-
-    });
-
-})();
-
-/*==================================================
-IMAGE LAZY ENHANCEMENT
-==================================================*/
-
-(function(){
-
-    const images=document.querySelectorAll("img");
-
-    images.forEach(img=>{
-
-        img.loading="lazy";
-
-        img.decoding="async";
-
-    });
-
-})();
-
-/*==================================================
-SCROLL PROGRESS
-==================================================*/
-
-(function(){
-
-    const progress=document.createElement("div");
-
-    progress.className="scroll-progress";
-
-    document.body.appendChild(progress);
-
-    const update=()=>{
-
-        const h=document.documentElement;
-
-        const total=h.scrollHeight-h.clientHeight;
-
-        const percent=(window.scrollY/total)*100;
-
-        progress.style.width=percent+"%";
-
+    const resume = (delay = 0) => {
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => {
+        paused = false;
+        start();
+      }, delay);
     };
 
-    update();
+    gallery.addEventListener('mouseenter', pause);
+    gallery.addEventListener('mouseleave', () => resume(300));
+    gallery.addEventListener('touchstart', pause, {passive:true});
+    gallery.addEventListener('touchend', () => resume(6500), {passive:true});
 
-    window.addEventListener("scroll",update);
-
-})();
-
-/*==================================================
-BUTTON RIPPLE EFFECT
-==================================================*/
-
-(function(){
-
-    const buttons=document.querySelectorAll(".button");
-
-    buttons.forEach(button=>{
-
-        button.addEventListener("click",function(e){
-
-            const ripple=document.createElement("span");
-
-            ripple.className="ripple";
-
-            const rect=this.getBoundingClientRect();
-
-            const size=Math.max(rect.width,rect.height);
-
-            ripple.style.width=size+"px";
-
-            ripple.style.height=size+"px";
-
-            ripple.style.left=(e.clientX-rect.left-size/2)+"px";
-
-            ripple.style.top=(e.clientY-rect.top-size/2)+"px";
-
-            this.appendChild(ripple);
-
-            setTimeout(()=>{
-
-                ripple.remove();
-
-            },600);
-
-        });
-
+    gallery.addEventListener('click', e => {
+      if (e.target.closest('button, [role="button"], .dot, .indicator')) {
+        resume(6500);
+      }
     });
 
+    start();
+  });
 })();
 
-/*==================================================
-GOOGLE REVIEW PLACEHOLDER
-Future API Hook
-==================================================*/
 
-async function loadGoogleReviews(){
+// ========================================
+// EDIT SECTION: SCROLL PROGRESS METER
+// ========================================
+(function initScrollProgress() {
+  const bar = document.getElementById('scroll-progress');
+  if (!bar) return;
 
-    /*
-        Future Version
+  const update = () => {
+    const doc = document.documentElement;
+    const scrollable = doc.scrollHeight - window.innerHeight;
+    const progress = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
+    bar.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+  };
 
-        Google Places API
-
-        Fetch Reviews
-
-        Render Review Cards
-
-    */
-
-}
-
-/*==================================================
-WINDOW RESIZE
-==================================================*/
-
-window.addEventListener("resize",()=>{
-
-    const nav=document.querySelector(".navigation");
-
-    if(window.innerWidth>991){
-
-        nav?.classList.remove("active");
-
-        document.body.classList.remove("no-scroll");
-
-    }
-
-});
-
-/*==================================================
-PAGE LOADED
-==================================================*/
-
-window.addEventListener("load",()=>{
-
-    document.body.classList.add("loaded");
-
-});
-
-/*==================================================
-END OF FILE
-
-THE WHITE WOOD HOMESTAY
-
-VERSION 2.0
-
-SCRIPT.JS
-
-LOCKED
-
-==================================================*/
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+})();

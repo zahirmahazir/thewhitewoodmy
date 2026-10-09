@@ -1,60 +1,65 @@
-export async function onRequestGet(context) {
-  const { env } = context;
+// =========================================================
+// THE WHITE WOOD — GOOGLE REVIEWS API
+// Cloudflare Pages Function + Google Places API (New)
+//
+// Required Cloudflare environment variables/secrets:
+//   GOOGLE_PLACES_API_KEY
+//   GOOGLE_PLACE_ID
+//
+// Keep the API key in Cloudflare, NOT in frontend JS or GitHub.
+// =========================================================
 
-  const API_KEY = env.GOOGLE_API_KEY;
-  const PLACE_ID = env.GOOGLE_PLACE_ID;
+export async function onRequestGet({ env }) {
+  const apiKey = env.GOOGLE_PLACES_API_KEY;
+  const placeId = env.GOOGLE_PLACE_ID;
 
-  if (!API_KEY || !PLACE_ID) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "Missing GOOGLE_API_KEY or GOOGLE_PLACE_ID"
-      }),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      }
+  if (!apiKey || !placeId) {
+    return json(
+      { error: "Google Places API is not configured." },
+      500
     );
   }
 
-  try {
-    const url = `https://places.googleapis.com/v1/places/${PLACE_ID}?fields=displayName,rating,userRatingCount,reviews&key=${API_KEY}`;
+  const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`;
 
+  try {
     const response = await fetch(url, {
       headers: {
-        "X-Goog-Api-Key": API_KEY,
-        "X-Goog-FieldMask":
-          "displayName,rating,userRatingCount,reviews"
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": "displayName,rating,userRatingCount,reviews,googleMapsUri"
       }
     });
 
     const data = await response.json();
 
-    return new Response(JSON.stringify(data), {
-      status: response.status,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "public, max-age=1800"
-      }
-    });
+    if (!response.ok) {
+      return json(
+        { error: "Google Places API request failed.", details: data },
+        response.status
+      );
+    }
 
-  } catch (err) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: err.message
-      }),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      }
+    return json({
+      name: data.displayName?.text || "The White Wood Homestay",
+      rating: data.rating || 0,
+      userRatingCount: data.userRatingCount || 0,
+      reviews: Array.isArray(data.reviews) ? data.reviews : [],
+      googleMapsUri: data.googleMapsUri || ""
+    });
+  } catch (error) {
+    return json(
+      { error: "Unable to contact Google Places API." },
+      502
     );
   }
+}
+
+function json(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "public, max-age=300"
+    }
+  });
 }

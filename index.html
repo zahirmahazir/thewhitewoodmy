@@ -1,946 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-    <!-- ========================================
-        META
-    ========================================= -->
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>The White Wood Homestay | Ara Kuda, Penang</title>
-
-    <meta name="description"
-        content="Samada pulang beraya atau kenduri saudara, The White Wood Homestay tersedia untuk memenuhi keperluan anda. Terletak di Ara Kuda, Penang, kami menyediakan penginapan yang selesa sepanjang penginapan anda di sini.">
-
-    <meta name="keywords"
-        content="The White Wood, Homestay Penang, Ara Kuda Homestay, Penang Airbnb, Homestay Malaysia">
-
-    <meta name="author" content="The White Wood">
-
-    <meta name="theme-color" content="#6F4E00">
-
-    <!-- ========================================
-        OPEN GRAPH
-    ========================================= -->
-
-    <meta property="og:type" content="website">
-
-    <meta property="og:title"
-        content="The White Wood Homestay">
-
-    <meta property="og:description"
-        content="Nikmati penginapan selesa di Ara Kuda, Penang.">
-
-    <meta property="og:image"
-        content="assets/hero1.jpg">
-
-    <meta property="og:url"
-        content="https://thewhitewood.my">
-
-    <!-- ========================================
-        TWITTER
-    ========================================= -->
-
-    <meta name="twitter:card"
-        content="summary_large_image">
-
-    <meta name="twitter:title"
-        content="The White Wood Homestay">
-
-    <meta name="twitter:description"
-        content=" Homestay selesa in Ara Kuda, Penang.">
-
-    <meta name="twitter:image"
-        content="assets/hero1.jpg">
-
-    <!-- ========================================
-        FAVICON
-    ========================================= -->
-
-    <link rel="icon" href="assets/favicon.ico">
-    <link rel="icon" sizes="32x32" href="assets/favicon-32.png">
-    <link rel="icon" sizes="192x192" href="assets/favicon-192.png">
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-    <link rel="manifest" href="manifest.json">
-
-    <!-- ========================================
-        GOOGLE FONTS
-    ========================================= -->
-
-    <link rel="preconnect"
-        href="https://fonts.googleapis.com">
-
-    <link rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-
-    <!-- ========================================
-        CSS
-    ========================================= -->
-
-    <link rel="stylesheet"
-        href="style.css">
-
-    <link rel="stylesheet" href="effects.css">
-    <link rel="stylesheet" href="review.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The White Wood | Homestays</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-<!-- ========================================
-    BACKGROUND SLIDER
-======================================== -->
-
-<div class="hero-slider">
-
-    <div class="hero-slider__image active"
-        style="background-image:url('assets/hero1.jpg')">
-    </div>
-
-    <div class="hero-slider__image"
-        style="background-image:url('assets/hero2.jpg')">
-    </div>
-
-    <div class="hero-slider__image"
-        style="background-image:url('assets/hero3.jpg')">
-    </div>
-
-    <div class="hero-slider__overlay"></div>
-
-</div>
-
-<!-- ========================================
-    HEADER
-======================================== -->
-
-<header class="header">
-
-    <div class="container">
-
-        <a href="#hero"
-            class="logo">
-
-            <img src="assets/logo.png"
-                alt="The White Wood">
-
-        </a>
-
-        <nav class="navigation">
-
-            <a href="#gallery">Gallery</a>
-
-            <a href="#facilities">Facilities</a>
-
-            <a href="#reviews">Reviews</a>
-
-            <a href="#location">Location</a>
-
-            <a href="#contact">Contact</a>
-
-        </nav>
-
-        <a href="#"
-            id="headerWhatsapp"
-            class="button button--gold">
-
-            Book Now
-
-        </a>
-
-        <button class="mobile-menu">
-
-            <span></span>
-            <span></span>
-            <span></span>
-
-        </button>
-
-    </div>
-
+  <!-- EDIT SECTION: SCROLL PROGRESS METER -->
+  <div id="scroll-progress" aria-hidden="true"></div>
+<!-- =========================================================
+     EDIT SECTION: HEADER / LOGO / NAVIGATION
+     Change logo text, navigation links and cart button here.
+     ========================================================= -->
+<header class="site-header">
+  <a class="brand" href="#top"><span>thewhitewood.my</span><small>HOMESTAY</small></a>
+  <nav>
+    <a href="#listings">Listings</a>
+    <a href="#about">About</a>
+    <button class="cart-btn" onclick="openCart()">Cart <b id="cartCount">0</b></button>
+  </nav>
 </header>
 
-<!-- ========================================
-    HERO
-======================================== -->
+<main id="top">
+<!-- =========================================================
+     EDIT SECTION: HERO
+     Change headline, intro text and hero gallery images here.
+     ========================================================= -->
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">PENANG · MALAYSIA</p>
+      <h1>Stay somewhere<br><em>beautiful.</em></h1>
+      <p class="hero-text">Two thoughtfully prepared homes for comfortable stays, short getaways and family trips.</p>
+      <a class="gold-btn" href="#listings">Explore stays</a>
+    </div>
+    <div class="gallery hero-gallery" data-gallery="hero">
+    <div class="gallery-track">
+      <div class="gallery-slide image-placeholder"><img src="assets/images/hero/hero1.jpg" alt="The White Wood hero 1"></div>
+      <div class="gallery-slide image-placeholder"><img src="assets/images/hero/hero2.jpg" alt="The White Wood hero 2"></div>
+      <div class="gallery-slide image-placeholder"><img src="assets/images/hero/hero3.jpg" alt="The White Wood hero 3"></div>
+    </div>
+    <button class="gallery-prev" aria-label="Previous image">‹</button>
+    <button class="gallery-next" aria-label="Next image">›</button>
+    <div class="gallery-dots"></div>
+  </div>
+  </section>
 
-<section
-    id="hero"
-    class="hero">
+  <!-- =========================================================
+     EDIT SECTION: HOMESTAY LISTINGS
+     Listing names, prices, descriptions, amenities and gallery
+     data are controlled mainly from script.js.
+     ========================================================= -->
+  <section id="listings" class="section">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">OUR HOMESTAYS</p>
+        <h2>Choose your stay</h2>
+      </div>
+      <p class="section-note">Check availability and book directly.</p>
+    </div>
+    <div id="listingGrid" class="listing-grid"></div>
+  </section>
 
-    <div class="container">
+  <!-- =========================================================
+     EDIT SECTION: GOOGLE REVIEWS + GOOGLE MAPS
+     Replace the mock review and map with real Google content later.
+     ========================================================= -->
+  <!-- ========================================
+     EDIT SECTION: GOOGLE REVIEWS + GOOGLE MAPS
+     ======================================== -->
+<section class="section reviews-map-section" id="reviews">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">GUEST EXPERIENCE</span>
+      <h2>What our guests say</h2>
+    </div>
+    <p>Real reviews and our location.</p>
+  </div>
 
-        <div class="hero__content">
-
-            <span class="hero__badge">
-
-                WELCOME TO
-
-            </span>
-
-            <h1>
-
-                The White Wood
-
-            </h1>
-
-            <h2>
-
-                Homestay selesa in Ara Kuda, Penang
-
-            </h2>
-
-            <p>
-
-                Samada pulang beraya atau kenduri saudara, The White Wood Homestay tersedia untuk memenuhi keperluan anda. Terletak di Ara Kuda, Penang, kami menyediakan penginapan yang selesa sepanjang penginapan anda di sini.
-
-            </p>
-
-            <div class="hero__buttons">
-
-                <a href="#"
-                    id="heroWhatsapp"
-                    class="button button--gold">
-
-                    Book Your Stay
-
-                </a>
-
-                <a href="#"
-                    id="heroAirbnb"
-                    class="button button--outline">
-
-                    Airbnb
-
-                </a>
-
-            </div>
-
+  <div class="reviews-map-grid">
+    <!-- GOOGLE REVIEWS -->
+    <div class="google-reviews-panel">
+      <div class="google-reviews-header">
+        <div>
+          <span class="eyebrow">GOOGLE REVIEWS</span>
+          <div class="google-rating-row">
+            <strong id="googleRating">—</strong>
+            <span class="google-stars">★★★★★</span>
+          </div>
+          <span id="googleReviewCount">Loading reviews...</span>
         </div>
-
+      </div>
+      <div id="reviewContainer" class="review-container">
+        <div class="review-loading">Loading Google Reviews...</div>
+      </div>
     </div>
 
-    <div class="scroll-indicator">
-
-        <span></span>
-
+    <!-- GOOGLE MAPS -->
+    <div class="google-map-panel">
+      <div class="google-map-header">
+        <span class="eyebrow">FIND US</span>
+        <h3>Google Maps</h3>
+      </div>
+      <div class="google-map-frame">
+        <iframe
+          title="The White Wood Homestay on Google Maps"
+          src="https://www.google.com/maps?q=The%20White%20Wood%20Homestay%20Penang%20Malaysia&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <a
+        class="map-open-link"
+        href="https://www.google.com/maps/search/?api=1&query=The%20White%20Wood%20Homestay%20Penang%20Malaysia"
+        target="_blank"
+        rel="noopener">
+        Open in Google Maps ↗
+      </a>
     </div>
-
+  </div>
 </section>
 
-<!-- ========================================
-    MAIN CONTENT
-======================================== -->
-
-<main>
-
-<!-- ========================================
-    GALLERY
-======================================== -->
-
-<section
-    id="gallery"
-    class="gallery section">
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <span class="section-heading__badge">
-
-                OUR GALLERY
-
-            </span>
-
-            <h2>
-
-                Experience The White Wood
-
-            </h2>
-
-            <p>
-
-                Every corner has been thoughtfully designed to
-                provide a peaceful, elegant and comfortable stay.
-
-            </p>
-
-        </div>
-
-        <div class="gallery-grid">
-
-            <a href="gallery/gallery1.jpg"
-                class="gallery-card gallery-card--large">
-
-                <img src="gallery/gallery1.jpg"
-                    alt="The White Wood">
-
-            </a>
-
-            <a href="gallery/gallery2.jpg"
-                class="gallery-card">
-
-                <img src="gallery/gallery2.jpg"
-                    alt="Living Area">
-
-            </a>
-
-            <a href="gallery/gallery3.jpg"
-                class="gallery-card">
-
-                <img src="gallery/gallery3.jpg"
-                    alt="Bedroom">
-
-            </a>
-
-            <a href="gallery/gallery4.jpg"
-                class="gallery-card">
-
-                <img src="gallery/gallery4.jpg"
-                    alt="Kitchen">
-
-            </a>
-
-            <a href="gallery/gallery5.jpg"
-                class="gallery-card">
-
-                <img src="gallery/gallery5.jpg"
-                    alt="Dining Area">
-
-            </a>
-
-            <a href="gallery/gallery6.jpg"
-                class="gallery-card">
-
-                <img src="gallery/gallery6.jpg"
-                    alt="Exterior">
-
-            </a>
-
-        </div>
-
-    </div>
-
+<!-- =========================================================
+     EDIT SECTION: BOOKING PLATFORMS
+     Add your real Website / Agoda / Airbnb / WhatsApp / Email links.
+     ========================================================= -->
+<section class="platform-section section">
+  <div class="trust-head">
+    <p class="eyebrow">BOOK YOUR STAY</p>
+    <h2>Book on your preferred platform</h2>
+    <p class="platform-intro">Choose the booking method that works best for you.</p>
+  </div>
+  <div class="platform-grid">
+    <a class="platform-card" href="#" onclick="return false;">
+      <span class="platform-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </span>
+      <span><strong>Website Kami</strong><small>Direct booking</small></span>
+      <span class="platform-arrow">→</span>
+    </a>
+    <a class="platform-card" href="#" onclick="return false;">
+      <span class="platform-icon agoda-icon">A</span>
+      <span><strong>Agoda</strong><small>Book on Agoda</small></span>
+      <span class="platform-arrow">→</span>
+    </a>
+    <a class="platform-card" href="#" onclick="return false;">
+      <span class="platform-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-4.7 0-8.5 3-8.5 7.5 0 2.6 1.4 4.8 3.7 6.2l-.7 3.3 3.1-1.7c.8.2 1.6.3 2.4.3 4.7 0 8.5-3 8.5-7.5S16.7 3.5 12 3.5Z"/></svg>
+      </span>
+      <span><strong>Airbnb</strong><small>View our Airbnb</small></span>
+      <span class="platform-arrow">→</span>
+    </a>
+    <a class="platform-card" href="#" onclick="return false;">
+      <span class="platform-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5Z"/><path d="M8.5 9.2c.3 2 2.3 4 4.3 4.3l1.1-1.1c.2-.2.5-.3.8-.1l1.4.6c.3.1.4.4.3.7-.3 1-1 1.5-2 1.4-4.2-.4-7.4-3.6-7.8-7.8-.1-1 .4-1.7 1.4-2 .3-.1.6 0 .7.3l.6 1.4c.1.3.1.6-.1.8L8.5 9.2Z"/></svg>
+      </span>
+      <span><strong>WhatsApp</strong><small>Chat with us</small></span>
+      <span class="platform-arrow">→</span>
+    </a>
+    <a class="platform-card" href="#" onclick="return false;">
+      <span class="platform-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5.5h17v13h-17z"/><path d="m4.5 7 7.5 5.5L19.5 7"/></svg>
+      </span>
+      <span><strong>Email</strong><small>Send us an email</small></span>
+      <span class="platform-arrow">→</span>
+    </a>
+  </div>
 </section>
 
-<!-- ========================================
-    FACILITIES
-======================================== -->
-
-<section
-    id="facilities"
-    class="facilities section">
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <span class="section-heading__badge">
-
-                WHY CHOOSE US
-
-            </span>
-
-            <h2>
-
-                Everything You Need
-
-            </h2>
-
-            <p>
-
-                The White Wood Homestay memastikan kelengkapan yang selesa memenuhi keperluan anda 
-
-            </p>
-
-        </div>
-
-        <div class="facility-grid">
-
-            <article class="facility-card">
-
-                <div class="facility-card__icon">
-
-                    <img src="icons/wifi.svg"
-                        alt="WiFi">
-
-                </div>
-
-                <h3>
-
-                    High Speed WiFi
-
-                </h3>
-
-                <p>
-
-                    WiFi yang laju sesuai untuk penggunaan kerja dan tengok Netflix
-
-                </p>
-
-            </article>
-
-            <article class="facility-card">
-
-                <div class="facility-card__icon">
-
-                    <img src="icons/parking.svg"
-                        alt="Parking">
-
-                </div>
-
-                <h3>
-
-                    Parking Disediakan
-
-                </h3>
-
-                <p>
-
-                    Parking muat dua kereta di dalam porch
-
-                </p>
-
-            </article>
-
-            <article class="facility-card">
-
-                <div class="facility-card__icon">
-
-                    <img src="icons/bedroom.svg"
-                        alt="Bedroom">
-
-                </div>
-
-                <h3>
-
-                    Ruang Selesa
-
-                </h3>
-
-                <p>
-
-                    Hampir semua ruang di The White Wood Homestay disejukkan dengan penyaman udara untuk keselesaan anda
-
-                </p>
-
-            </article>
-
-            <article class="facility-card">
-
-                <div class="facility-card__icon">
-
-                    <img src="icons/tv.svg"
-                        alt="Smart TV">
-
-                </div>
-
-                <h3>
-
-                    Smart Entertainment
-
-                </h3>
-
-                <p>
-
-                    Enjoy Netflix, YouTube
-                    sepanjang menginap di sini.
-
-                </p>
-
-            </article>
-
-            <article class="facility-card">
-
-                <div class="facility-card__icon">
-
-                    <img src="icons/kitchen.svg"
-                        alt="Kitchen">
-
-                </div>
-
-                <h3>
-
-                    Dapur Lengkap
-
-                </h3>
-
-                <p>
-
-                    Dapur lengkap dengan Peti Ais, Microwave, Air Fryer dan Kettle untuk kegunaan tetamu
-
-                </p>
-
-            </article>
-
-            <article class="facility-card">
-
-                <div class="facility-card__icon">
-
-                    <img src="icons/family.svg"
-                        alt="Family">
-
-                </div>
-
-                <h3>
-
-                    Family Friendly
-
-                </h3>
-
-                <p>
-
-                    Sesuai untuk percutian keluarga, pulang beraya
-                    dan urusan pekerjaan.
-
-                </p>
-
-            </article>
-
-        </div>
-
-    </div>
-
-</section>
-
-<!-- ========================================
-    GOOGLE REVIEWS
-======================================== -->
-
-<section
-    id="reviews"
-    class="reviews section">
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <span class="section-heading__badge">
-
-                GUEST REVIEWS
-
-            </span>
-
-            <h2>
-
-                Loved By Our Guests
-
-            </h2>
-
-            <p>
-
-                Pengalaman terbaik yang dikongsi oleh
-                tetamu kami.
-
-            </p>
-
-        </div>
-
-        <div class="review-summary">
-
-            <div class="review-summary__score">
-
-                <h3>
-
-                    ★★★★★
-
-                </h3>
-
-                <strong id="googleRating">
-
-                    Loading...
-
-                </strong>
-
-                <span id="googleReviewCount">
-
-                    Loading...
-
-                </span>
-
-            </div>
-
-            <a href="#"
-                id="googleReviewButton"
-                class="button button--gold">
-
-                View Google Reviews
-
-            </a>
-
-        </div>
-
-        <div
-            class="review-slider"
-            id="reviewContainer">
-
-            <!--
-                Google Reviews
-                will be injected
-                by JavaScript
-            -->
-
-        </div>
-
-    </div>
-
-</section>
-
-<!-- ========================================
-    LOCATION
-======================================== -->
-
-<section
-    id="location"
-    class="location section">
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <span class="section-heading__badge">
-
-                FIND US
-
-            </span>
-
-            <h2>
-
-                Lokasi Yang Strategik
-
-            </h2>
-
-            <p>
-
-                Terletak di Ara Kuda, Penang dengan easy access untuk ke
-                Bukit Mertajam, Butterworth and Kulim. 
-                The White Wood juga dikelilingi convenience store seperti 99 Speedmart, 7Eleven, Farmasi, Zus dan banyak lagi
-
-            </p>
-
-        </div>
-
-        <div class="location-wrapper">
-
-            <div class="location-map">
-
-                <iframe
-                    id="googleMap"
-                    src=""
-                    loading="lazy"
-                    allowfullscreen
-                    referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
-
-            </div>
-
-            <div class="location-card">
-
-                <h3>
-
-                    The White Wood Homestay
-
-                </h3>
-
-                <p>
-
-                    Ara Kuda<br>
-                    Pulau Pinang<br><br>
-
-                    Peaceful neighbourhood.<br>
-                    Suitable for families,
-                    business travellers
-                    and short getaways.
-
-                </p>
-
-                <a
-                    href="#"
-                    id="mapsButton"
-                    class="button button--gold">
-
-                    Open Google Maps
-
-                </a>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-<!-- ========================================
-    CONTACT
-======================================== -->
-
-<section
-    id="contact"
-    class="contact section">
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <span class="section-heading__badge">
-
-                HUBUNGI KAMI
-
-            </span>
-
-            <h2>
-
-                Bersedia untuk tempahan?
-
-            </h2>
-
-            <p>
-
-                Book directly with us or reach us
-                through your preferred platform.
-
-            </p>
-
-        </div>
-
-        <div class="contact-grid">
-
-            <a
-                id="contactWhatsapp"
-                href="#"
-                class="contact-card">
-
-                <img
-                    src="icons/whatsapp.svg"
-                    alt="WhatsApp">
-
-                <h3>
-
-                    WhatsApp
-
-                </h3>
-
-                <span>
-
-                    Instant Booking
-
-                </span>
-
-            </a>
-
-            <a
-                id="contactEmail"
-                href="#"
-                class="contact-card">
-
-                <img
-                    src="icons/email.svg"
-                    alt="Email">
-
-                <h3>
-
-                    Email
-
-                </h3>
-
-                <span>
-
-                    Send us a message
-
-                </span>
-
-            </a>
-
-            <a
-                id="contactAirbnb"
-                href="#"
-                class="contact-card">
-
-                <img
-                    src="icons/airbnb.svg"
-                    alt="Airbnb">
-
-                <h3>
-
-                    Airbnb
-
-                </h3>
-
-                <span>
-
-                    View Listing
-
-                </span>
-
-            </a>
-
-            <a
-                id="contactMaps"
-                href="#"
-                class="contact-card">
-
-                <img
-                    src="icons/maps.svg"
-                    alt="Google Maps">
-
-                <h3>
-
-                    Google Maps
-
-                </h3>
-
-                <span>
-
-                    Navigation
-
-                </span>
-
-            </a>
-
-        </div>
-
-        <div class="social">
-
-            <a
-                id="instagramLink"
-                href="#"
-                aria-label="Instagram">
-
-                <img
-                    src="icons/instagram.svg"
-                    alt="Instagram">
-
-            </a>
-
-            <a
-                id="tiktokLink"
-                href="#"
-                aria-label="TikTok">
-
-                <img
-                    src="icons/tiktok.svg"
-                    alt="TikTok">
-
-            </a>
-
-            <a
-                id="airbnbLink"
-                href="#"
-                aria-label="Airbnb">
-
-                <img
-                    src="icons/airbnb.svg"
-                    alt="Airbnb">
-
-            </a>
-
-            <a
-                id="emailLink"
-                href="#"
-                aria-label="Email">
-
-                <img
-                    src="icons/email.svg"
-                    alt="Email">
-
-            </a>
-
-            <a
-                id="mapsLink"
-                href="#"
-                aria-label="Maps">
-
-                <img
-                    src="icons/maps.svg"
-                    alt="Google Maps">
-
-            </a>
-
-        </div>
-
-    </div>
-
+<!-- =========================================================
+     EDIT SECTION: SOCIAL MEDIA / QUICK LINKS
+     Change ONLY the href values below when you want to update links.
+     These are intentionally kept separate for easy future editing.
+     ========================================================= -->
+<section class="social-links-section">
+  <div class="social-links-box">
+    <span class="social-links-label">Follow us</span>
+
+    <!-- EDIT LINK: INSTAGRAM -->
+    <a class="social-link" href="#" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4"/>
+        <circle cx="12" cy="12" r="4"/>
+        <circle cx="17.5" cy="6.7" r="1"/>
+      </svg>
+    </a>
+
+    <!-- EDIT LINK: TIKTOK -->
+    <a class="social-link" href="#" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14 4v9.2a4.3 4.3 0 1 1-3.2-4.1"/>
+        <path d="M14 4c.8 2.1 2.1 3.4 4.2 3.8"/>
+      </svg>
+    </a>
+
+    <!-- EDIT LINK: AIRBNB -->
+    <a class="social-link social-link-text" href="#" target="_blank" rel="noopener" aria-label="Airbnb" title="Airbnb">A</a>
+
+    <!-- EDIT LINK: EMAIL -->
+    <a class="social-link" href="mailto:admin@thewhitewood.my" aria-label="Email" title="Email">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.5" y="5.5" width="17" height="13" rx="1"/>
+        <path d="m4.5 7 7.5 5.5L19.5 7"/>
+      </svg>
+    </a>
+
+    <!-- EDIT LINK: GOOGLE MAPS -->
+    <a class="social-link" href="https://www.google.com/maps/search/?api=1&query=The%20White%20Wood%20Homestay%20Penang%20Malaysia" target="_blank" rel="noopener" aria-label="Google Maps" title="Google Maps">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 21s6-6.2 6-11A6 6 0 0 0 6 10c0 4.8 6 11 6 11Z"/>
+        <circle cx="12" cy="10" r="2"/>
+      </svg>
+    </a>
+  </div>
 </section>
 
 </main>
 
-<!-- ========================================
-    FOOTER
-======================================== -->
-
-<footer class="footer">
-
-    <div class="container">
-
-        <img
-            src="assets/logo.png"
-            alt="The White Wood"
-            class="footer__logo">
-
-        <p class="footer__name">
-
-            The White Wood Homestay
-
-        </p>
-
-        <p class="footer__address">
-
-            Ara Kuda, Pulau Pinang
-
-        </p>
-
-        <div class="footer__divider"></div>
-
-        <p class="footer__copyright">
-
-            © 2026 The White Wood Homestay.
-            All Rights Reserved.
-
-        </p>
-
-    </div>
-
+<!-- =========================================================
+     EDIT SECTION: FOOTER
+     Change copyright text or footer branding here.
+     ========================================================= -->
+<footer>
+  <div class="footer-brand"><strong>thewhitewood.my</strong><span>HOMESTAY</span></div>
+  <p>© 2026 The White Wood. All rights reserved.</p>
 </footer>
 
-<!-- ========================================
-    LIGHTBOX
-======================================== -->
-
-<div
-    class="lightbox"
-    id="lightbox">
-
-    <span
-        class="lightbox__close">
-
-        &times;
-
-    </span>
-
-    <img
-        id="lightboxImage"
-        src=""
-        alt="Gallery">
-
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <button class="close" onclick="closeModal()">×</button>
+    <div id="modalContent"></div>
+  </div>
 </div>
 
-<!-- ========================================
-    JAVASCRIPT
-======================================== -->
-
-<script src="config.js"></script>
+<div id="toast" class="toast"></div>
 <script src="script.js"></script>
-<script src="google-review.js"></script>
-<script src="seo.js"></script>
-<script src="performance.js"></script>
-
+  <script src="google-review.js"></script>
 </body>
-
 </html>
