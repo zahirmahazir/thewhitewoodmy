@@ -56,3 +56,7 @@ This update applies high-specificity responsive rules to the actual `.listing-gr
 
 ## Mobile Listing Title and Price
 On mobile, the listing title is kept on one line, with the nightly price directly below it and the location below the price. Desktop layout is unchanged.
+
+
+## Mobile Listing Order Update
+On mobile, the listing card order is: title on one line, location directly below, and nightly price underneath the location. Desktop layout remains unchanged.

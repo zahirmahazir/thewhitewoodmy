@@ -978,3 +978,22 @@ body {
     font-size: 15px !important;
   }
 }
+
+
+/* =========================================================
+   EDIT SECTION: MOBILE LISTING ORDER — TITLE, LOCATION, PRICE
+   ========================================================= */
+@media (max-width: 800px) {
+  .listing-grid .card .card-top h3 {
+    grid-row: 1 !important;
+  }
+  .listing-grid .card .card-top .location {
+    grid-row: 2 !important;
+  }
+  .listing-grid .card .card-top .price {
+    grid-row: 3 !important;
+    justify-self: start !important;
+    text-align: left !important;
+    margin-top: 1px !important;
+  }
+}
