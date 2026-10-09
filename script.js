@@ -242,20 +242,21 @@ function selectCalendarDate(value){
  const today=new Date(); today.setHours(0,0,0,0);
  if(picked < today) return;
 
- if(!checkin.value || checkout.value){
+ if(!checkin.value){
    checkin.value=value;
    checkout.value="";
  } else {
    const startDate=parseLocalDate(checkin.value);
-   const minCheckout=new Date(startDate);
-   minCheckout.setDate(minCheckout.getDate()+MINIMUM_NIGHTS);
-   if(picked < minCheckout){
+   if(picked <= startDate){
      checkin.value=value;
      checkout.value="";
    } else {
+     // Keep short stays selected so the guest sees the red minimum-stay warning.
      checkout.value=value;
+     const minCheckout=new Date(startDate);
+     minCheckout.setDate(minCheckout.getDate()+MINIMUM_NIGHTS);
      const cal=document.getElementById("dateRangeCalendar");
-     if(cal) cal.classList.remove("is-open");
+     if(cal && picked >= minCheckout) cal.classList.remove("is-open");
    }
  }
  syncSelectedDateSummary();
@@ -301,12 +302,8 @@ function renderDateRangeCalendar(){
  cal.innerHTML=`<div class="calendar-toolbar"><button type="button" aria-label="Previous month" onclick="changeCalendarMonth(-1)">‹</button><button type="button" aria-label="Next month" onclick="changeCalendarMonth(1)">›</button></div><div class="calendar-months">${calendarMonthHTML(calendarViewDate)}${calendarMonthHTML(next)}</div><div class="calendar-footer"><span>${document.getElementById("checkin")?.value && !document.getElementById("checkout")?.value ? `Choose checkout (minimum ${MINIMUM_NIGHTS} nights)` : "Select check-in, then check-out"}</span><button type="button" onclick="document.getElementById('dateRangeCalendar').classList.remove('is-open')">Done</button></div>`;
 }
 function updateCheckoutMinimum(){
- const checkin=document.getElementById("checkin");
- const checkout=document.getElementById("checkout");
- if(!checkin || !checkout || !checkin.value) return;
- const minCheckout=parseLocalDate(checkin.value);
- minCheckout.setDate(minCheckout.getDate()+MINIMUM_NIGHTS);
- if(checkout.value && parseLocalDate(checkout.value)<minCheckout) checkout.value="";
+ // Do not erase a checkout under two nights: retain it so checkAvailability()
+ // can show the visible red minimum-stay message and let the guest correct it.
  syncSelectedDateSummary();
 }
 function nights(){

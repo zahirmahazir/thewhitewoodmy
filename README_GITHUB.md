@@ -48,3 +48,7 @@ The booking modal includes a built-in date-range calendar (no external calendar 
 
 ## Listing Card Responsive Layout
 Listing cards now use more balanced heading and price sizing. On mobile, the price sits on its own top row and the listing title uses the full card width below it, avoiding narrow awkward line breaks. Description, amenities and action buttons are slightly smaller on mobile.
+
+
+## Mobile Listing + Minimum Stay Warning Fix
+This update applies high-specificity responsive rules to the actual `.listing-grid .card` markup so the mobile listing title and price stay compact even if older CSS is still loaded. If a guest selects a checkout that gives only one night, the selection remains visible and a red minimum-two-night warning is shown; the guest can reopen the calendar and choose a later checkout.

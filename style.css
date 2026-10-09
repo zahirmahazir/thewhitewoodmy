@@ -798,3 +798,136 @@ body {
   .card .tag { font-size:10px; padding:6px 8px; }
   .card-actions button { font-size:11px; padding:10px 12px; }
 }
+
+
+/* =========================================================
+   EDIT SECTION: FINAL MOBILE LISTING LAYOUT OVERRIDE
+   High-specificity rules so older stylesheets cannot enlarge mobile text.
+   ========================================================= */
+.listing-grid .card,
+.listing-grid .card .card-body,
+.listing-grid .card .card-top,
+.listing-grid .card .card-top > div:first-child {
+  min-width:0 !important;
+  max-width:100%;
+}
+.listing-grid .card .card-top {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  align-items:start !important;
+  column-gap:12px !important;
+}
+.listing-grid .card .card-top h3 {
+  font-size:clamp(24px,2.1vw,29px) !important;
+  line-height:1.12 !important;
+  letter-spacing:-.015em !important;
+  overflow-wrap:normal !important;
+  word-break:normal !important;
+  margin:0 0 7px !important;
+}
+.listing-grid .card .card-top .price {
+  font-size:clamp(16px,1.5vw,20px) !important;
+  line-height:1.25 !important;
+  white-space:nowrap !important;
+  text-align:right !important;
+}
+.listing-grid .card .card-top .price small {
+  font-size:10px !important;
+  white-space:nowrap !important;
+}
+.listing-grid .card .desc {
+  font-size:14px !important;
+  line-height:1.6 !important;
+}
+.listing-grid .card .amenity-icon {
+  font-size:11px !important;
+  padding:7px 9px !important;
+}
+.listing-grid .card .card-actions button {
+  font-size:12px !important;
+  padding:11px 14px !important;
+}
+@media (max-width:800px) {
+  .listing-grid {
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:20px !important;
+  }
+  .listing-grid .card .card-body {
+    padding:18px !important;
+  }
+  .listing-grid .card .card-top {
+    grid-template-columns:minmax(0,1fr) !important;
+    row-gap:5px !important;
+  }
+  .listing-grid .card .card-top .price {
+    grid-row:1 !important;
+    justify-self:end !important;
+    font-size:16px !important;
+    margin:0 0 3px !important;
+  }
+  .listing-grid .card .card-top > div:first-child {
+    grid-row:2 !important;
+    width:100% !important;
+  }
+  .listing-grid .card .card-top h3 {
+    font-size:clamp(24px,6vw,28px) !important;
+    line-height:1.12 !important;
+    max-width:100% !important;
+    margin:0 0 6px !important;
+  }
+  .listing-grid .card .location {
+    font-size:12px !important;
+    line-height:1.4 !important;
+  }
+  .listing-grid .card .desc {
+    font-size:12px !important;
+    line-height:1.55 !important;
+    margin:12px 0 !important;
+  }
+  .listing-grid .card .amenities {
+    gap:6px !important;
+    margin:12px 0 !important;
+  }
+  .listing-grid .card .amenity-icon {
+    font-size:10px !important;
+    padding:6px 8px !important;
+    gap:5px !important;
+  }
+  .listing-grid .card .card-actions {
+    gap:8px !important;
+    margin-top:14px !important;
+    flex-wrap:wrap !important;
+  }
+  .listing-grid .card .card-actions button {
+    font-size:11px !important;
+    padding:10px 12px !important;
+    min-height:38px !important;
+  }
+}
+@media (max-width:420px) {
+  .listing-grid .card .card-body { padding:15px !important; }
+  .listing-grid .card .card-top h3 { font-size:24px !important; }
+  .listing-grid .card .card-top .price { font-size:15px !important; }
+  .listing-grid .card .desc { font-size:12px !important; }
+}
+
+/* EDIT SECTION: MINIMUM 2-NIGHT WARNING */
+.availability.unavailable {
+  color:#b42318 !important;
+  background:#fff0f0 !important;
+  border:1px solid #f3b7b7 !important;
+  border-left:4px solid #c62828 !important;
+  padding:12px 14px !important;
+  font-size:13px !important;
+  font-weight:700 !important;
+  line-height:1.55 !important;
+  border-radius:2px !important;
+}
+.availability.unavailable::before {
+  content:"MINIMUM STAY";
+  display:block;
+  margin-bottom:4px;
+  font-size:10px;
+  letter-spacing:.1em;
+  font-weight:800;
+}
