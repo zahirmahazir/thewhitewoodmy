@@ -40,3 +40,7 @@ The five links are kept separately editable:
 - Airbnb
 - Email
 - Google Maps
+
+
+## Booking Date Range Calendar
+The booking modal now uses one range calendar. Check-in and check-out are highlighted, with a soft gold highlight between them. The minimum two-night stay is enforced during selection. Flatpickr is loaded from jsDelivr, so the live website needs internet access for the calendar library.

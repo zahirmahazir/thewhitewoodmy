@@ -648,3 +648,73 @@ body {
     max-height: 360px;
   }
 }
+
+
+/* =========================================================
+   EDIT SECTION: BOOKING DATE-RANGE CALENDAR
+   ========================================================= */
+.booking-grid-range {
+  grid-template-columns: minmax(0, 1.6fr) minmax(140px, .7fr);
+  align-items: start;
+}
+.date-range-field { min-width: 0; }
+.date-range-field .flatpickr-input,
+.date-range-field input[readonly] {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #cfc8b8;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+.selected-date-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px;
+  background: #f8f6f1;
+  border: 1px solid var(--line);
+}
+.selected-date-summary span:not(.date-summary-arrow) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.selected-date-summary small {
+  font-size: 9px;
+  letter-spacing: .08em;
+  color: #777;
+  font-weight: 700;
+}
+.selected-date-summary strong { font-size: 12px; font-weight: 700; }
+.date-summary-arrow { color: var(--gold); font-size: 18px; }
+.flatpickr-calendar {
+  font-family: "Josefin Sans", sans-serif;
+  box-shadow: 0 12px 35px rgba(0,0,0,.16);
+  border: 1px solid var(--line);
+}
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange {
+  background: var(--gold) !important;
+  border-color: var(--gold) !important;
+  color: #fff !important;
+}
+.flatpickr-day.inRange,
+.flatpickr-day.prevMonthDay.inRange,
+.flatpickr-day.nextMonthDay.inRange {
+  background: rgba(184,139,43,.18) !important;
+  border-color: rgba(184,139,43,.05) !important;
+  box-shadow: -5px 0 0 rgba(184,139,43,.18), 5px 0 0 rgba(184,139,43,.18) !important;
+  color: #161616 !important;
+}
+@media (max-width: 800px) {
+  .booking-grid-range { grid-template-columns: 1fr; }
+  .flatpickr-calendar.open { width: min(320px, calc(100vw - 48px)); }
+}
