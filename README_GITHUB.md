@@ -60,3 +60,7 @@ On mobile, the listing title is kept on one line, with the nightly price directl
 
 ## Mobile Listing Order Update
 On mobile, the listing card order is: title on one line, location directly below, and nightly price underneath the location. Desktop layout remains unchanged.
+
+
+## Calendar Re-select Check-in Fix
+When a complete check-in/checkout range is already selected, selecting another date starts a new check-in selection instead of always treating the date as checkout. A “Change check-in date” control also clears the current checkout so a new check-in can be selected without refreshing the page or clearing the cart.

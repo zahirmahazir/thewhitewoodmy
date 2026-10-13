@@ -997,3 +997,19 @@ body {
     margin-top: 1px !important;
   }
 }
+
+
+/* EDIT SECTION: CHANGE CHECK-IN DATE CONTROL */
+.reselect-checkin-btn {
+  display:inline-block;
+  margin-top:7px;
+  padding:5px 0;
+  border:0;
+  background:transparent;
+  color:var(--gold);
+  font:inherit;
+  font-size:11px;
+  font-weight:700;
+  text-decoration:underline;
+  cursor:pointer;
+}

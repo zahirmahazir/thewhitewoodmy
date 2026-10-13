@@ -190,6 +190,7 @@ function openBooking(id){
      <button type="button" id="dateRangeToggle" class="date-range-toggle" onclick="toggleDateCalendar()">
        <span id="dateRangeLabel">Choose your dates</span><span aria-hidden="true">▦</span>
      </button>
+     <button type="button" class="reselect-checkin-btn" onclick="startReselectCheckin()">Change check-in date</button>
      <input id="checkin" type="hidden">
      <input id="checkout" type="hidden">
      <div class="selected-date-summary" aria-live="polite">
@@ -230,6 +231,19 @@ function toggleDateCalendar(){
  cal.classList.toggle("is-open");
  renderDateRangeCalendar();
 }
+function startReselectCheckin(){
+ const checkin=document.getElementById("checkin");
+ const checkout=document.getElementById("checkout");
+ if(!checkin || !checkout) return;
+ // Preserve the current check-in as a visual starting point, but clear checkout
+ // so the next calendar tap is interpreted as a new check-in.
+ checkout.value="";
+ syncSelectedDateSummary();
+ const cal=document.getElementById("dateRangeCalendar");
+ if(cal) cal.classList.add("is-open");
+ renderDateRangeCalendar();
+ checkAvailability();
+}
 function changeCalendarMonth(delta){
  calendarViewDate.setMonth(calendarViewDate.getMonth()+delta);
  renderDateRangeCalendar();
@@ -242,22 +256,30 @@ function selectCalendarDate(value){
  const today=new Date(); today.setHours(0,0,0,0);
  if(picked < today) return;
 
- if(!checkin.value){
-   checkin.value=value;
-   checkout.value="";
- } else {
-   const startDate=parseLocalDate(checkin.value);
-   if(picked <= startDate){
+ if(!checkin.value || !checkout.value){
+   // No complete date range yet: first tap is check-in, second tap is checkout.
+   // If a checkout was already selected, a fresh calendar session starts with check-in.
+   if(!checkin.value){
      checkin.value=value;
      checkout.value="";
    } else {
-     // Keep short stays selected so the guest sees the red minimum-stay warning.
-     checkout.value=value;
-     const minCheckout=new Date(startDate);
-     minCheckout.setDate(minCheckout.getDate()+MINIMUM_NIGHTS);
-     const cal=document.getElementById("dateRangeCalendar");
-     if(cal && picked >= minCheckout) cal.classList.remove("is-open");
+     const startDate=parseLocalDate(checkin.value);
+     if(picked <= startDate){
+       checkin.value=value;
+       checkout.value="";
+     } else {
+       // Keep short stays selected so the red minimum-stay warning can be shown.
+       checkout.value=value;
+       const minCheckout=new Date(startDate);
+       minCheckout.setDate(minCheckout.getDate()+MINIMUM_NIGHTS);
+       const cal=document.getElementById("dateRangeCalendar");
+       if(cal && picked >= minCheckout) cal.classList.remove("is-open");
+     }
    }
+ } else {
+   // Existing range is complete: the next tap begins a NEW check-in selection.
+   checkin.value=value;
+   checkout.value="";
  }
  syncSelectedDateSummary();
  renderDateRangeCalendar();
