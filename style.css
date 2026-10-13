@@ -1015,25 +1015,19 @@ body {
 }
 
 
-/* EDIT SECTION: D1 BOOKED / BLOCKED CALENDAR STATES */
+/* EDIT SECTION: D1 BOOKED / BLOCKED CALENDAR STATES
+   Match the requested simple style: light grey cell + line through the date. */
 .date-range-calendar .calendar-day.is-booked {
-  color: #8f8f8f;
-  background: #f1f0ed;
-  text-decoration: line-through;
-  text-decoration-thickness: 1.5px;
+  color: #777 !important;
+  background: #f1f1f1 !important;
+  text-decoration: line-through !important;
+  text-decoration-thickness: 1.5px !important;
+  text-decoration-color: #444 !important;
+  border-color: #e4e4e4 !important;
   position: relative;
 }
-.date-range-calendar .calendar-day .calendar-cross {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #b42318;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-  pointer-events: none;
+.date-range-calendar .calendar-day.is-booked.is-disabled {
+  cursor: not-allowed !important;
+  opacity: 1 !important;
 }
-.date-range-calendar .calendar-day.is-booked.is-disabled { cursor: not-allowed; opacity: .78; }
 #addBookingBtn:disabled { opacity: .45; cursor: not-allowed; filter: grayscale(.35); }

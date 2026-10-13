@@ -351,7 +351,7 @@ function calendarMonthHTML(monthDate){
    const inRange=checkin && checkout && value>checkin && value<checkout;
    const classes=["calendar-day",isStart?"range-start":"",isEnd?"range-end":"",inRange?"range-middle":"",occupied?"is-booked":"",disabled?"is-disabled":""].filter(Boolean).join(" ");
    const label=occupied ? `${formatStayDate(value)}, unavailable` : formatStayDate(value);
-   days+=`<button type="button" class="${classes}" ${disabled?'disabled':''} onclick="selectCalendarDate('${value}')" aria-label="${label}" title="${occupied?'Booked / blocked':'Available to select'}">${day}${occupied?'<span class="calendar-cross" aria-hidden="true">×</span>':''}</button>`;
+   days+=`<button type="button" class="${classes}" ${disabled?'disabled':''} onclick="selectCalendarDate('${value}')" aria-label="${label}" title="${occupied?'Booked / blocked':'Available to select'}">${day}</button>`;
  }
  return `<section class="calendar-month"><h4>${monthDate.toLocaleDateString("en-MY",{month:"long",year:"numeric"})}</h4><div class="calendar-weekdays"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div><div class="calendar-days">${days}</div></section>`;
 }
