@@ -1013,3 +1013,27 @@ body {
   text-decoration:underline;
   cursor:pointer;
 }
+
+
+/* EDIT SECTION: D1 BOOKED / BLOCKED CALENDAR STATES */
+.date-range-calendar .calendar-day.is-booked {
+  color: #8f8f8f;
+  background: #f1f0ed;
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  position: relative;
+}
+.date-range-calendar .calendar-day .calendar-cross {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b42318;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+.date-range-calendar .calendar-day.is-booked.is-disabled { cursor: not-allowed; opacity: .78; }
+#addBookingBtn:disabled { opacity: .45; cursor: not-allowed; filter: grayscale(.35); }

@@ -208,7 +208,7 @@ function openBooking(id){
    <div id="discountRow"></div>
    <div id="estimate" class="summary-row total"><span>Estimated total</span><strong>-</strong></div>
  </div>
- <button class="gold-btn" style="width:100%;margin-top:20px" onclick="addBooking('${id}')">Add to booking</button>`);
+ <button id="addBookingBtn" class="gold-btn" style="width:100%;margin-top:20px" onclick="addBooking('${id}')" disabled>Add to booking</button>`);
  renderDateRangeCalendar();
 }
 
@@ -296,6 +296,38 @@ function syncSelectedDateSummary(){
  if(bDisplay) bDisplay.textContent=formatStayDate(b);
  if(label) label.textContent=a && b ? `${formatStayDate(a)} → ${formatStayDate(b)}` : a ? `${formatStayDate(a)} → Select checkout` : "Choose your dates";
 }
+const calendarBlockedDates = new Map();
+let calendarAvailabilityRequest = 0;
+function dateRangeDays(start, end){
+ const out=[]; let d=parseLocalDate(start); const stop=parseLocalDate(end);
+ while(d && d<stop && out.length<370){out.push(localISODate(d));d.setDate(d.getDate()+1)}
+ return out;
+}
+function blockedForListing(id){return calendarBlockedDates.get(id) || new Set()}
+async function loadCalendarBlockedDates(){
+ const id=window.currentBookingId;
+ if(!id) return;
+ const version=++calendarAvailabilityRequest;
+ const first=new Date(calendarViewDate.getFullYear(),calendarViewDate.getMonth(),1);
+ const last=new Date(calendarViewDate.getFullYear(),calendarViewDate.getMonth()+2,1);
+ const start=localISODate(first), end=localISODate(last);
+ try{
+  const params=new URLSearchParams({listingId:id,mode:'calendar',start,end});
+  const response=await fetch(`/api/availability?${params.toString()}`,{headers:{Accept:'application/json'},cache:'no-store'});
+  const data=await response.json();
+  if(version!==calendarAvailabilityRequest || !response.ok || !Array.isArray(data.ranges)) return;
+  const blocked=new Set();
+  for(const range of data.ranges){
+   for(const day of dateRangeDays(range.start_date,range.end_date)) blocked.add(day);
+  }
+  calendarBlockedDates.set(id,blocked);
+  renderDateRangeCalendar(false);
+ }catch(error){
+  // Do not silently mark dates as available if the calendar range lookup fails.
+  const cal=document.getElementById('dateRangeCalendar');
+  if(cal) cal.dataset.availabilityError='true';
+ }
+}
 function calendarMonthHTML(monthDate){
  const year=monthDate.getFullYear(), month=monthDate.getMonth();
  const first=new Date(year,month,1);
@@ -303,25 +335,32 @@ function calendarMonthHTML(monthDate){
  const mondayOffset=(first.getDay()+6)%7;
  const checkin=document.getElementById("checkin")?.value || "";
  const checkout=document.getElementById("checkout")?.value || "";
+ const blocked=blockedForListing(window.currentBookingId);
  const today=new Date(); today.setHours(0,0,0,0);
  let days="";
  for(let i=0;i<mondayOffset;i++) days+='<span class="calendar-day empty" aria-hidden="true"></span>';
  for(let day=1;day<=daysInMonth;day++){
    const date=new Date(year,month,day);
    const value=localISODate(date);
-   const disabled=date<today;
+   const occupied=blocked.has(value);
+   const choosingCheckout=!!checkin && !checkout && value>checkin;
+   // Occupied nights cannot be chosen as check-in. A blocked date may still be a
+   // valid checkout boundary, so allow it as checkout and let server range-check decide.
+   const disabled=date<today || (occupied && !choosingCheckout);
    const isStart=value===checkin, isEnd=value===checkout;
    const inRange=checkin && checkout && value>checkin && value<checkout;
-   const classes=["calendar-day",isStart?"range-start":"",isEnd?"range-end":"",inRange?"range-middle":"",disabled?"is-disabled":""].filter(Boolean).join(" ");
-   days+=`<button type="button" class="${classes}" ${disabled?'disabled':''} onclick="selectCalendarDate('${value}')" aria-label="${formatStayDate(value)}">${day}</button>`;
+   const classes=["calendar-day",isStart?"range-start":"",isEnd?"range-end":"",inRange?"range-middle":"",occupied?"is-booked":"",disabled?"is-disabled":""].filter(Boolean).join(" ");
+   const label=occupied ? `${formatStayDate(value)}, unavailable` : formatStayDate(value);
+   days+=`<button type="button" class="${classes}" ${disabled?'disabled':''} onclick="selectCalendarDate('${value}')" aria-label="${label}" title="${occupied?'Booked / blocked':'Available to select'}">${day}${occupied?'<span class="calendar-cross" aria-hidden="true">×</span>':''}</button>`;
  }
  return `<section class="calendar-month"><h4>${monthDate.toLocaleDateString("en-MY",{month:"long",year:"numeric"})}</h4><div class="calendar-weekdays"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div><div class="calendar-days">${days}</div></section>`;
 }
-function renderDateRangeCalendar(){
+function renderDateRangeCalendar(loadAvailability=true){
  const cal=document.getElementById("dateRangeCalendar");
  if(!cal) return;
  const next=new Date(calendarViewDate); next.setMonth(next.getMonth()+1);
  cal.innerHTML=`<div class="calendar-toolbar"><button type="button" aria-label="Previous month" onclick="changeCalendarMonth(-1)">‹</button><button type="button" aria-label="Next month" onclick="changeCalendarMonth(1)">›</button></div><div class="calendar-months">${calendarMonthHTML(calendarViewDate)}${calendarMonthHTML(next)}</div><div class="calendar-footer"><span>${document.getElementById("checkin")?.value && !document.getElementById("checkout")?.value ? `Choose checkout (minimum ${MINIMUM_NIGHTS} nights)` : "Select check-in, then check-out"}</span><button type="button" onclick="document.getElementById('dateRangeCalendar').classList.remove('is-open')">Done</button></div>`;
+ if(loadAvailability) loadCalendarBlockedDates();
 }
 function updateCheckoutMinimum(){
  // Do not erase a checkout under two nights: retain it so checkAvailability()
@@ -342,10 +381,15 @@ function cartHasOverlap(listingId, checkin, checkout){
 }
 
 let availabilityRequestVersion = 0;
+function setAddBookingEnabled(enabled){
+ const button=document.getElementById('addBookingBtn');
+ if(button) button.disabled=!enabled;
+}
 async function checkAvailability(){
  const n=nights(), box=document.getElementById("availability"), est=document.getElementById("estimate");
  const breakdown=document.getElementById("nightBreakdown"), discountRow=document.getElementById("discountRow");
  if(!n){
+   setAddBookingEnabled(false);
    box.className="availability";box.textContent="Select valid check-in and check-out dates.";
    if(est)est.innerHTML="<span>Estimated total</span><strong>-</strong>";
    if(breakdown)breakdown.innerHTML="";
@@ -353,6 +397,7 @@ async function checkAvailability(){
    return;
  }
  if(n < MINIMUM_NIGHTS){
+   setAddBookingEnabled(false);
    box.className="availability unavailable";
    box.innerHTML=`❌ Minimum stay is ${MINIMUM_NIGHTS} nights.<br>Please select at least ${MINIMUM_NIGHTS} nights.`;
    if(est)est.innerHTML="<span>Estimated total</span><strong>-</strong>";
@@ -364,12 +409,14 @@ async function checkAvailability(){
  const a=document.getElementById("checkin")?.value;
  const b=document.getElementById("checkout")?.value;
  if(cartHasOverlap(id,a,b)){
+   setAddBookingEnabled(false);
    box.className="availability unavailable";
    box.innerHTML='❌ These dates overlap with another booking in your cart.<br>Please review your cart.';
    if(est)est.innerHTML="<span>Estimated total</span><strong>-</strong>";
    return;
  }
  const requestVersion=++availabilityRequestVersion;
+ setAddBookingEnabled(false);
  box.className="availability";
  box.textContent="Checking availability…";
  try {
@@ -379,14 +426,19 @@ async function checkAvailability(){
    if(requestVersion!==availabilityRequestVersion) return;
    if(!response.ok) throw new Error(result.error || 'Availability check failed.');
    if(result.available){
+     setAddBookingEnabled(true);
      box.className="availability";
      box.innerHTML='<span class="available">✓ Available</span> — Dates are currently available. Availability is checked again when you submit.';
    } else {
+     setAddBookingEnabled(false);
      box.className="availability unavailable";
-     box.textContent=result.reason==='minimum_stay' ? `Minimum stay is ${result.minimumNights} nights.` : 'Not available';
+     box.innerHTML=result.reason==='minimum_stay'
+       ? `❌ Minimum stay is ${result.minimumNights} nights.<br>Please select at least ${result.minimumNights} nights.`
+       : '<strong>NOT AVAILABLE</strong><br>These dates are already booked or blocked. Please choose other dates.';
    }
  } catch(error) {
    if(requestVersion!==availabilityRequestVersion) return;
+   setAddBookingEnabled(false);
    box.className="availability unavailable";
    box.textContent="Unable to check availability. Please try again.";
  }
@@ -400,7 +452,7 @@ const oldOpenBooking=openBooking;
 openBooking=function(id){window.currentBookingId=id;oldOpenBooking(id)}
 
 /* EDIT SECTION: ADD BOOKING TO CART */
-function addBooking(id){
+async function addBooking(id){
  const a=document.getElementById("checkin").value,b=document.getElementById("checkout").value,n=nights();
  if(!a||!b||n<=0){showToast("Please select valid check-in and check-out dates.");return}
  if(n < MINIMUM_NIGHTS){
@@ -417,6 +469,24 @@ function addBooking(id){
      box.className="availability unavailable";
      box.innerHTML='❌ These dates overlap with another booking in your cart.<br>Please review your cart.';
    }
+   setAddBookingEnabled(false);
+   return;
+ }
+ // Re-check on the server at click time; calendar state can be stale.
+ setAddBookingEnabled(false);
+ try{
+   const params=new URLSearchParams({listingId:id,checkin:a,checkout:b});
+   const response=await fetch(`/api/availability?${params.toString()}`,{headers:{Accept:'application/json'},cache:'no-store'});
+   const result=await response.json();
+   if(!response.ok || !result.available){
+     const box=document.getElementById("availability");
+     if(box){box.className="availability unavailable";box.innerHTML=result.reason==='minimum_stay' ? `❌ Minimum stay is ${result.minimumNights || MINIMUM_NIGHTS} nights.<br>Please select at least ${result.minimumNights || MINIMUM_NIGHTS} nights.` : '<strong>NOT AVAILABLE</strong><br>These dates are already booked or blocked. Please choose other dates.';}
+     renderDateRangeCalendar();
+     return;
+   }
+ }catch(error){
+   const box=document.getElementById("availability");
+   if(box){box.className="availability unavailable";box.textContent="Unable to verify availability. Please try again.";}
    return;
  }
  const x=getListing(id);
