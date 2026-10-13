@@ -341,7 +341,8 @@ function cartHasOverlap(listingId, checkin, checkout){
   );
 }
 
-function checkAvailability(){
+let availabilityRequestVersion = 0;
+async function checkAvailability(){
  const n=nights(), box=document.getElementById("availability"), est=document.getElementById("estimate");
  const breakdown=document.getElementById("nightBreakdown"), discountRow=document.getElementById("discountRow");
  if(!n){
@@ -362,25 +363,36 @@ function checkAvailability(){
  const id=window.currentBookingId, x=getListing(id);
  const a=document.getElementById("checkin")?.value;
  const b=document.getElementById("checkout")?.value;
- const overlap=cartHasOverlap(id,a,b);
-
- if(overlap){
+ if(cartHasOverlap(id,a,b)){
    box.className="availability unavailable";
    box.innerHTML='❌ These dates overlap with another booking in your cart.<br>Please review your cart.';
- } else {
-   box.className="availability";
-   box.innerHTML='<span class="available">✓ Available</span> — This is mock availability for the prototype.';
+   if(est)est.innerHTML="<span>Estimated total</span><strong>-</strong>";
+   return;
  }
-
+ const requestVersion=++availabilityRequestVersion;
+ box.className="availability";
+ box.textContent="Checking availability…";
+ try {
+   const params=new URLSearchParams({listingId:id,checkin:a,checkout:b});
+   const response=await fetch(`/api/availability?${params.toString()}`,{headers:{Accept:'application/json'},cache:'no-store'});
+   const result=await response.json();
+   if(requestVersion!==availabilityRequestVersion) return;
+   if(!response.ok) throw new Error(result.error || 'Availability check failed.');
+   if(result.available){
+     box.className="availability";
+     box.innerHTML='<span class="available">✓ Available</span> — Dates are currently available. Availability is checked again when you submit.';
+   } else {
+     box.className="availability unavailable";
+     box.textContent=result.reason==='minimum_stay' ? `Minimum stay is ${result.minimumNights} nights.` : 'Not available';
+   }
+ } catch(error) {
+   if(requestVersion!==availabilityRequestVersion) return;
+   box.className="availability unavailable";
+   box.textContent="Unable to check availability. Please try again.";
+ }
  const p=getStayPricing(x,n);
- if(breakdown){
-   breakdown.innerHTML = `<div class="summary-row"><span>${n} night${n>1?"s":""}</span><strong>${money(p.gross)}</strong></div>`;
- }
- if(discountRow){
-   discountRow.innerHTML = p.discount > 0
-     ? `<div class="summary-row discount-row"><span>Multi-night discount</span><strong>− ${money(p.discount)}</strong></div>`
-     : "";
- }
+ if(breakdown) breakdown.innerHTML = `<div class="summary-row"><span>${n} night${n>1?"s":""}</span><strong>${money(p.gross)}</strong></div>`;
+ if(discountRow) discountRow.innerHTML = p.discount > 0 ? `<div class="summary-row discount-row"><span>Multi-night discount</span><strong>− ${money(p.discount)}</strong></div>` : "";
  if(est)est.innerHTML=`<span>Estimated total (${n} night${n>1?"s":""})</span><strong class="gold">${money(p.total)}</strong>`;
 }
 window.currentBookingId=null;
@@ -423,25 +435,49 @@ function openCart(){
  <button class="gold-btn" style="width:100%;margin-top:20px" onclick="checkout()">Proceed to payment</button>
  <button class="outline-btn" style="width:100%;margin-top:10px" onclick="clearCart()">Clear booking</button>`);
 }
-/* EDIT SECTION: CHECKOUT / PAYMENT PAGE */
+/* EDIT SECTION: CHECKOUT / BOOKING REQUEST
+   This creates pending booking requests in D1. Payment is not implemented yet. */
 function checkout(){
  const total=cart.reduce((s,x)=>s+x.total,0);
- openModal(`<p class="eyebrow">CHECKOUT</p><h3>Payment details</h3>
+ openModal(`<p class="eyebrow">BOOKING REQUEST</p><h3>Guest details</h3>
  <div class="checkout-items">${cart.map(x=>`<div class="summary-row"><span>${x.name}<br><small>${x.checkin} → ${x.checkout}</small></span><strong class="gold">${money(x.total)}</strong></div>`).join("")}</div>
  <div class="checkout-form">
-   <input placeholder="Full name">
-   <input type="email" placeholder="Email address">
-   <input placeholder="Phone number">
-   <div class="pay-note">Payment gateway is mocked in this prototype. Later this button can be connected to Stripe, ToyyibPay, Billplz, FPX or another Malaysian payment provider.</div>
-   <button class="gold-btn" onclick="payMock()">Pay ${money(total)}</button>
+   <input id="bookingGuestName" autocomplete="name" placeholder="Full name" required>
+   <input id="bookingGuestEmail" type="email" autocomplete="email" placeholder="Email address (optional)">
+   <input id="bookingGuestPhone" autocomplete="tel" placeholder="Phone number" required>
+   <div class="pay-note">This sends a booking request and reserves the dates as pending. It does not take payment or confirm your stay. We will add payment later.</div>
+   <button class="gold-btn" id="submitBookingRequest" onclick="submitBookingRequest()">Submit booking request · ${money(total)}</button>
  </div>`);
 }
-/* EDIT SECTION: PAYMENT GATEWAY
-   Replace this mock function with your real payment provider later. */
-function payMock(){
- const ref="WW"+Date.now().toString().slice(-8);
- cart=[];saveCart();
- openModal(`<div style="text-align:center;padding:35px 0"><div style="font-size:45px;color:var(--gold)">✓</div><p class="eyebrow">BOOKING RECEIVED</p><h3>Thank you.</h3><p class="desc">Prototype payment successful.<br>Reference: <strong>${ref}</strong></p><button class="gold-btn" onclick="closeModal()">Done</button></div>`);
+async function submitBookingRequest(){
+ const name=document.getElementById('bookingGuestName')?.value.trim();
+ const email=document.getElementById('bookingGuestEmail')?.value.trim();
+ const phone=document.getElementById('bookingGuestPhone')?.value.trim();
+ const button=document.getElementById('submitBookingRequest');
+ if(!name||!phone){showToast('Please enter your name and phone number.');return;}
+ if(!cart.length){showToast('Your cart is empty.');return;}
+ if(button){button.disabled=true;button.textContent='Submitting…';}
+ const references=[];
+ try {
+   for(const item of cart){
+     const listingId = item.listingId === 'rumah-puteh' ? 'rumah-puteh' : item.listingId;
+     const response=await fetch('/api/bookings',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({
+       listingId,checkin:item.checkin,checkout:item.checkout,guestName:name,guestEmail:email||null,guestPhone:phone,
+       guests:Math.max(1,parseInt(String(item.guests).match(/\d+/)?.[0]||'1',10)),source:'website',totalAmount:item.total,
+       notes:'Submitted via The White Wood website. Payment not yet implemented.'
+     })});
+     const result=await response.json();
+     if(!response.ok) throw new Error(result.error || (response.status===409?'Not available':'Unable to submit booking request.'));
+     references.push(result.reference);
+   }
+   cart=[];saveCart();
+   openModal(`<div style="text-align:center;padding:30px 0"><div style="font-size:45px;color:var(--gold)">✓</div><p class="eyebrow">REQUEST RECEIVED</p><h3>Thank you.</h3><p class="desc">Your booking request is pending review. No payment has been taken and your stay is not confirmed yet.</p><p>Reference${references.length>1?'s':''}: <strong>${references.join(', ')}</strong></p><button class="gold-btn" onclick="closeModal()">Done</button></div>`);
+ } catch(error) {
+   if(button){button.disabled=false;button.textContent='Try again';}
+   const message=error.message==='Not available' ? 'Not available' : (error.message||'Unable to submit booking request.');
+   const note=document.createElement('p');note.className='availability unavailable';note.textContent=message;
+   document.querySelector('#modalContent .checkout-form')?.appendChild(note);
+ }
 }
 function clearCart(){cart=[];saveCart();closeModal();showToast("Booking cleared.")}
 function showToast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2200)}
