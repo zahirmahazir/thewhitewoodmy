@@ -1,3 +1,51 @@
+// Authenticated admin list/update endpoints. The public POST booking endpoint remains below.
+export async function onRequestGet({ request, env }) {
+  const auth = authorize(request, env); if (auth) return auth;
+  if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
+  const url = new URL(request.url);
+  const listingId = url.searchParams.get('listingId') || '';
+  const status = url.searchParams.get('status') || '';
+  const allowedStatuses = new Set(['pending', 'confirmed', 'cancelled', 'completed', 'rejected']);
+  if (status && !allowedStatuses.has(status)) return json({ error: 'Invalid status filter.' }, 400);
+  try {
+    let sql = `SELECT b.id, b.reference, b.listing_id AS listingId, l.name AS listingName, b.checkin, b.checkout, b.nights, b.guest_name AS guestName, b.guest_email AS guestEmail, b.guest_phone AS guestPhone, b.guests, b.source, b.status, b.total_amount AS totalAmount, b.currency, b.notes, b.created_at AS createdAt, b.updated_at AS updatedAt FROM bookings b JOIN listings l ON l.id=b.listing_id WHERE 1=1`;
+    const params = [];
+    if (listingId) { sql += ' AND b.listing_id = ?'; params.push(listingId); }
+    if (status) { sql += ' AND b.status = ?'; params.push(status); }
+    sql += ' ORDER BY b.created_at DESC LIMIT 300';
+    const result = await env.DB.prepare(sql).bind(...params).all();
+    return json({ success: true, bookings: result.results || [] });
+  } catch { return json({ error: 'Unable to load bookings.' }, 500); }
+}
+
+export async function onRequestPatch({ request, env }) {
+  const auth = authorize(request, env); if (auth) return auth;
+  if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
+  let body;
+  try { body = await request.json(); } catch { return json({ error: 'Request body must be valid JSON.' }, 400); }
+  const id = clean(body.id, 80);
+  const status = String(body.status || '');
+  const allowed = new Set(['confirmed', 'cancelled', 'rejected', 'completed']);
+  if (!id || !allowed.has(status)) return json({ error: 'Provide a booking id and status (confirmed, cancelled, rejected, completed).' }, 400);
+  try {
+    const booking = await env.DB.prepare('SELECT id, listing_id, checkin, checkout, status FROM bookings WHERE id = ?').bind(id).first();
+    if (!booking) return json({ error: 'Booking not found.' }, 404);
+    if (status === 'confirmed') {
+      const conflict = await env.DB.prepare(`SELECT 1 AS found FROM bookings WHERE listing_id = ? AND id <> ? AND status IN ('pending','confirmed') AND checkin < ? AND checkout > ? LIMIT 1`).bind(booking.listing_id, id, booking.checkout, booking.checkin).first();
+      const block = await env.DB.prepare(`SELECT 1 AS found FROM date_blocks WHERE listing_id = ? AND start_date < ? AND end_date > ? LIMIT 1`).bind(booking.listing_id, booking.checkout, booking.checkin).first();
+      if (conflict || block) return json({ error: 'Cannot confirm: dates overlap another active booking or block.' }, 409);
+    }
+    await env.DB.prepare(`UPDATE bookings SET status = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).bind(status, id).run();
+    return json({ success: true, id, status });
+  } catch { return json({ error: 'Unable to update booking status.' }, 500); }
+}
+
+function authorize(request, env) {
+  if (!env.ADMIN_API_TOKEN) return json({ error: 'ADMIN_API_TOKEN secret is not configured.' }, 503);
+  if (request.headers.get('Authorization') !== `Bearer ${env.ADMIN_API_TOKEN}`) return json({ error: 'Unauthorized.' }, 401);
+  return null;
+}
+
 // POST /api/bookings
 // Creates a pending booking request only after a fresh server-side overlap check.
 // Payment is intentionally not implemented here. Pending bookings reserve dates until cancelled/rejected.
