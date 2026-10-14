@@ -45,3 +45,28 @@ h1,h2,h3,.brand{font-family:"Josefin Sans","Trebuchet MS",Arial,sans-serif}
 
 /* Single date-range control for admin manual blocks */
 .range-date-label{display:grid;gap:7px;font-size:13px;font-weight:700;margin:0 0 14px}.range-date-label input{cursor:pointer;background:#fff;padding-right:42px}.calendar-eyebrow{font-size:11px;color:var(--gold);letter-spacing:.14em;font-weight:700}.admin-calendar{position:relative;z-index:5}
+
+/* Final polish: compact admin typography while preventing iOS focus zoom. */
+body{font-size:14px}
+.wrap{max-width:1080px}
+.panel{padding:18px}
+h1{font-size:clamp(27px,3.5vw,36px)}
+h2{font-size:19px}
+.muted,.meta{font-size:12px}
+label,.range-date-label{font-size:12px}
+.button{font-size:13px;padding:10px 14px}
+.tab{font-size:10px}
+.item-card{padding:14px}
+.item-card h3{font-size:15px}
+.admin-month-title{font-size:14px}
+.admin-day{font-size:12px}
+.admin-calendar-foot{font-size:11px}
+/* iOS Safari zooms the page when a focused input uses less than 16px text.
+   Keep the single date-range field at 16px so choosing dates stays steady. */
+@media(max-width:700px){
+  input,select,textarea{font-size:16px}
+  .range-date-label input,#adminDateRange{font-size:16px!important}
+  .wrap{padding-left:14px;padding-right:14px}
+  .panel{padding:15px}
+  .muted,.meta{font-size:12px}
+}
