@@ -22,3 +22,9 @@ h1,h2,h3,.brand{font-family:"Josefin Sans","Trebuchet MS",Arial,sans-serif}
 .admin-calendar-foot{border-top:1px solid var(--line);margin-top:12px;padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted)}
 .admin-calendar-clear{border:0;background:transparent;color:#8a6420;text-decoration:underline;cursor:pointer;font:inherit}
 @media(max-width:560px){.admin-calendar{padding:10px}.admin-calendar-months{grid-template-columns:1fr;gap:8px}.admin-month:nth-child(2){display:none}.admin-day{height:40px;font-size:13px}.admin-weekdays span{font-size:11px}.admin-calendar-foot{align-items:flex-start;flex-direction:column}.admin-date-fields{grid-template-columns:1fr}}
+
+/* Calendar stays closed until a date field is selected, like the public booking flow. */
+#adminCalendar[hidden]{display:none!important}
+.admin-calendar-actions{display:flex;align-items:center;gap:14px}
+.admin-calendar-done{border:0;background:#111;color:#fff;padding:9px 18px;font-weight:600;cursor:pointer;font-family:inherit}
+.admin-calendar-done:hover{background:#8a6420}

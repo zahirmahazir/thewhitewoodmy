@@ -30,7 +30,7 @@
             <label>Start date<input id="adminStartDate" name="startDate" type="text" placeholder="Choose check-in" readonly required></label>
             <label>End date (checkout)<input id="adminEndDate" name="endDate" type="text" placeholder="Choose check-out" readonly required></label>
           </div>
-          <div id="adminCalendar" class="admin-calendar" aria-label="Choose block dates"></div>
+          <div id="adminCalendar" class="admin-calendar" aria-label="Choose block dates" hidden></div>
           <label>Reason<select name="source" required><option value="airbnb">Airbnb</option><option value="agoda">Agoda</option><option value="whatsapp">WhatsApp</option><option value="private">Private booking</option><option value="maintenance">Maintenance</option><option value="admin">Other / Admin</option></select></label>
           <label>Label<input name="label" maxlength="120" placeholder="e.g. TEST ONLY or external reservation"></label>
           <label>Notes<textarea name="notes" rows="2" maxlength="2000" placeholder="Optional notes"></textarea></label>
@@ -41,6 +41,7 @@
       </section>
     </section>
   </main>
-  <script src="admin.js" defer></script>\n  <script src="admin-calendar.js" defer></script>
+  <script src="admin.js" defer></script>
+  <script src="admin-calendar.js" defer></script>
 </body>
 </html>
