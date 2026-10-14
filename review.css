@@ -65,6 +65,8 @@ REVIEW CARD
 
 #reviewContainer .review-card__footer{
     grid-area:author !important;
+    grid-column:1 !important;
+    grid-row:1 !important;
     display:flex !important;
     align-items:center !important;
     gap:12px !important;
@@ -107,6 +109,8 @@ REVIEW CARD
 
 #reviewContainer .review-card__content{
     grid-area:review !important;
+    grid-column:2 !important;
+    grid-row:1 !important;
     display:block !important;
     min-width:0 !important;
     width:100% !important;
@@ -376,6 +380,16 @@ RESPONSIVE
             "review" !important;
         row-gap:14px !important;
         padding:22px 0 !important;
+    }
+
+    #reviewContainer .review-card__footer{
+        grid-column:1 !important;
+        grid-row:1 !important;
+    }
+
+    #reviewContainer .review-card__content{
+        grid-column:1 !important;
+        grid-row:2 !important;
     }
 }
 
