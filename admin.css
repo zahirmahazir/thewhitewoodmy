@@ -24,3 +24,22 @@ input,select,textarea{font-size:14px;font-weight:400;border:1px solid #ded8cc;bo
 @media(min-width:1000px){.login-panel{margin-top:10vh}}
 @media(max-width:700px){.wrap{margin:25px auto;padding:0 14px 42px}.topbar{min-height:64px;padding:10px 14px}.brand{font-size:15px;gap:9px}.brand span{padding-left:9px;font-size:9px}.page-heading{align-items:flex-start;flex-direction:column;gap:14px}.page-heading .button{width:100%}.cards{grid-template-columns:1fr;gap:12px}.date-grid{grid-template-columns:1fr;gap:0}.toolbar label{flex:1 1 100%;min-width:0}.panel{padding:19px;border-radius:13px}.login-panel{padding:25px 21px;margin-top:7vh}.section-heading{align-items:flex-start;flex-direction:column;gap:5px}.item-card{padding:17px}.tabs{gap:0}.tab{padding:13px 14px 15px}.button{white-space:normal}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+
+/* The White Wood date fields: branded selection states.
+   Native browser calendar popups are OS-controlled; these rules style the fields
+   and the visible chosen-date state consistently across browsers. */
+.block-form input[type="date"]{
+  appearance:none;-webkit-appearance:none;min-height:48px;padding:12px 14px;
+  border:1px solid #ded8cc;border-radius:8px;background-color:#fff;color:var(--ink);
+  font-family:'Josefin Sans',Arial,sans-serif;font-size:14px;font-weight:500;
+  font-variant-numeric:tabular-nums;letter-spacing:.015em;cursor:pointer;
+  box-shadow:0 2px 8px rgba(35,29,18,.025);
+}
+.block-form input[type="date"]:hover{border-color:var(--gold);background-color:#fffdf8}
+.block-form input[type="date"]:focus{outline:0;border-color:var(--gold-dark);box-shadow:0 0 0 3px rgba(185,154,90,.18);background-color:#fffdf8}
+.block-form input[type="date"]:valid{border-color:#c7b78f;background-color:#fbf8f0;color:#29251d}
+.block-form input[type="date"]::-webkit-calendar-picker-indicator{opacity:1;cursor:pointer;padding:5px;margin-right:-4px;border-radius:5px;filter:sepia(.45) saturate(.8)}
+.block-form input[type="date"]::-webkit-calendar-picker-indicator:hover{background:#f5f0e5}
+.block-form .date-grid label{gap:9px}
+.block-form .date-grid label:focus-within{color:var(--gold-dark)}
+@media(max-width:700px){.block-form input[type="date"]{min-height:50px;font-size:15px}}
