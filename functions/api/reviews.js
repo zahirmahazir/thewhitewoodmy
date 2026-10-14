@@ -10,7 +10,7 @@
 // =========================================================
 
 export async function onRequestGet({ env }) {
-  const apiKey = env.GOOGLE_PLACES_API_KEY;
+  const apiKey = env.GOOGLE_API_KEY;
   const placeId = env.GOOGLE_PLACE_ID;
 
   if (!apiKey || !placeId) {
