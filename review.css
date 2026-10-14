@@ -37,7 +37,7 @@ REVIEW CARD
 
 #reviewContainer .review-card{
     display:grid !important;
-    grid-template-columns:160px minmax(0, 1fr) !important;
+    grid-template-columns:118px minmax(0, 1fr) !important;
     grid-template-areas:"author review" !important;
     align-items:center !important;
     column-gap:24px !important;
@@ -111,10 +111,22 @@ REVIEW CARD
     grid-area:review !important;
     grid-column:2 !important;
     grid-row:1 !important;
-    display:block !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-self:stretch !important;
     min-width:0 !important;
     width:100% !important;
     margin:0 !important;
+    padding:0 !important;
+}
+
+#reviewContainer .review-card__stars,
+#reviewContainer .review-card__text{
+    width:100% !important;
+    box-sizing:border-box !important;
+    padding:0 !important;
+    text-align:left !important;
 }
 
 #reviewContainer .review-card__stars{
@@ -366,8 +378,8 @@ RESPONSIVE
 
 @media(max-width:768px){
     #reviewContainer .review-card{
-        grid-template-columns:145px minmax(0, 1fr) !important;
-        column-gap:20px !important;
+        grid-template-columns:118px minmax(0, 1fr) !important;
+        column-gap:24px !important;
         padding:24px 0 !important;
     }
 }
