@@ -107,16 +107,7 @@ function createReviewCard(review) {
     const date = formatDate(review.publishTime);
 
     card.innerHTML = `
-        <div class="review-card__stars">
-            ${stars}
-        </div>
-
-        <p class="review-card__text">
-            ${text}
-        </p>
-
         <div class="review-card__footer">
-
             <div class="review-card__avatar">
                 ${avatar}
             </div>
@@ -125,7 +116,13 @@ function createReviewCard(review) {
                 <h4>${author}</h4>
                 <span>${date}</span>
             </div>
+        </div>
 
+        <div class="review-card__content">
+            <div class="review-card__stars" aria-label="${Number(review.rating || 5)} out of 5 stars">
+                ${stars}
+            </div>
+            <p class="review-card__text">${text}</p>
         </div>
     `;
 
