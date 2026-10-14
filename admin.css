@@ -42,3 +42,6 @@ h1,h2,h3,.brand{font-family:"Josefin Sans","Trebuchet MS",Arial,sans-serif}
 .admin-calendar-foot{font-family:inherit}
 @media(min-width:900px){.block-form{padding:24px}.page-heading{align-items:flex-end}.page-heading h1{font-size:42px}.toolbar{border:1px solid var(--line);padding:14px;background:#faf9f6}.toolbar label{margin:0}.admin-calendar-months{gap:24px}.admin-day{height:36px}}
 @media(max-width:700px){.wrap{margin:18px auto;padding:0 14px 40px}.topbar{height:58px}.page-heading h1{font-size:32px}}
+
+/* Single date-range control for admin manual blocks */
+.range-date-label{display:grid;gap:7px;font-size:13px;font-weight:700;margin:0 0 14px}.range-date-label input{cursor:pointer;background:#fff;padding-right:42px}.calendar-eyebrow{font-size:11px;color:var(--gold);letter-spacing:.14em;font-weight:700}.admin-calendar{position:relative;z-index:5}

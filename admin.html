@@ -26,10 +26,11 @@
         <form id="blockForm" class="panel block-form">
           <div><p class="eyebrow">BLOCK DATES</p><h2>Create manual block</h2></div>
           <label>Listing<select name="listingId" required><option value="white-wood">The White Wood Homestay</option><option value="rumah-puteh">Rumah Puteh</option></select></label>
-          <div class="date-grid admin-date-fields">
-            <label>Start date<input id="adminStartDate" name="startDate" type="text" placeholder="Choose check-in" readonly required></label>
-            <label>End date (checkout)<input id="adminEndDate" name="endDate" type="text" placeholder="Choose check-out" readonly required></label>
-          </div>
+          <label class="range-date-label">Dates to block
+            <input id="adminDateRange" type="text" placeholder="Choose start and end dates" readonly autocomplete="off" aria-haspopup="dialog" aria-expanded="false">
+          </label>
+          <input id="adminStartDate" name="startDate" type="hidden">
+          <input id="adminEndDate" name="endDate" type="hidden">
           <div id="adminCalendar" class="admin-calendar" aria-label="Choose block dates" hidden></div>
           <label>Reason<select name="source" required><option value="airbnb">Airbnb</option><option value="agoda">Agoda</option><option value="whatsapp">WhatsApp</option><option value="private">Private booking</option><option value="maintenance">Maintenance</option><option value="admin">Other / Admin</option></select></label>
           <label>Label<input name="label" maxlength="120" placeholder="e.g. TEST ONLY or external reservation"></label>
@@ -44,63 +45,50 @@
   <script src="/admin.js" defer></script>
   <script>
 (() => {
-  const root = document.getElementById('adminCalendar');
-  if (!root) return;
-  const form = document.getElementById('blockForm');
-  const startInput = document.getElementById('adminStartDate');
-  const endInput = document.getElementById('adminEndDate');
-  const today = new Date(); today.setHours(0,0,0,0);
-  let shown = new Date(today.getFullYear(), today.getMonth(), 1);
-  let start = null, end = null;
-  let isOpen = false;
-  root.hidden = true;
-  const pad = n => String(n).padStart(2,'0');
-  const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  const parse = s => { if(!s)return null; const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
-  const fmt = d => d ? d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : 'Choose date';
-  const same = (a,b) => a && b && iso(a)===iso(b);
-  function render(){
-    const months = [new Date(shown),new Date(shown.getFullYear(),shown.getMonth()+1,1)];
-    root.innerHTML = `<div class="admin-calendar-head"><button class="admin-calendar-nav" type="button" data-move="-1" aria-label="Previous month">‹</button><span style="font-size:12px;color:#8a6420;letter-spacing:.12em">SELECT BLOCK DATES</span><button class="admin-calendar-nav" type="button" data-move="1" aria-label="Next month">›</button></div><div class="admin-calendar-months">${months.map(monthHTML).join('')}</div><div class="admin-calendar-foot"><span>${start ? `START: ${fmt(start)}${end ? `  →  END: ${fmt(end)}` : '  →  Choose checkout'}` : 'Select start date, then end date'}</span><div class="admin-calendar-actions"><button type="button" class="admin-calendar-clear">Clear dates</button><button type="button" class="admin-calendar-done">Done</button></div></div>`;
-    root.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>{shown.setMonth(shown.getMonth()+Number(b.dataset.move));render();}));
-    root.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>choose(parse(b.dataset.date))));
-    root.querySelector('.admin-calendar-clear').addEventListener('click',()=>{start=end=null;sync();render();});
-    root.querySelector('.admin-calendar-done').addEventListener('click',closeCalendar);
+ const root=document.getElementById('adminCalendar'); if(!root)return;
+ const form=document.getElementById('blockForm'), rangeInput=document.getElementById('adminDateRange');
+ const startInput=document.getElementById('adminStartDate'), endInput=document.getElementById('adminEndDate');
+ const today=new Date(); today.setHours(0,0,0,0);
+ let shown=new Date(today.getFullYear(),today.getMonth(),1), start=null,end=null,isOpen=false;
+ root.hidden=true;
+ const pad=n=>String(n).padStart(2,'0');
+ const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+ const parse=s=>{if(!s)return null;const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+ const fmt=d=>d?d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'';
+ const same=(a,b)=>a&&b&&iso(a)===iso(b);
+ function render(){
+  const months=[new Date(shown),new Date(shown.getFullYear(),shown.getMonth()+1,1)];
+  root.innerHTML=`<div class="admin-calendar-head"><button class="admin-calendar-nav" type="button" data-move="-1" aria-label="Previous month">‹</button><span class="calendar-eyebrow">SELECT BLOCK DATES</span><button class="admin-calendar-nav" type="button" data-move="1" aria-label="Next month">›</button></div><div class="admin-calendar-months">${months.map(monthHTML).join('')}</div><div class="admin-calendar-foot"><span>${start?`START: ${fmt(start)}${end?` → END: ${fmt(end)}`:' → Choose checkout'}`:'Select start date, then end date'}</span><div class="admin-calendar-actions"><button type="button" class="admin-calendar-clear">Clear dates</button><button type="button" class="admin-calendar-done">Close</button></div></div>`;
+  root.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>{shown.setMonth(shown.getMonth()+Number(b.dataset.move));render()}));
+  root.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>choose(parse(b.dataset.date))));
+  root.querySelector('.admin-calendar-clear').addEventListener('click',()=>{start=end=null;sync();render()});
+  root.querySelector('.admin-calendar-done').addEventListener('click',closeCalendar);
+ }
+ function monthHTML(month){
+  const first=new Date(month.getFullYear(),month.getMonth(),1),offset=(first.getDay()+6)%7,daysInMonth=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();
+  const weekdays=['MON','TUE','WED','THU','FRI','SAT','SUN'];let cells=Array(offset).fill('<span></span>');
+  for(let day=1;day<=daysInMonth;day++){
+   const d=new Date(month.getFullYear(),month.getMonth(),day),key=iso(d),isStart=same(d,start),isEnd=same(d,end),inRange=start&&end&&d>start&&d<end,disabled=d<today;
+   const cls=['admin-day',isStart||isEnd?'selected':'',inRange?'in-range':'',isStart||isEnd?'range-edge':'',same(d,today)?'today':''].filter(Boolean).join(' ');
+   cells.push(`<button type="button" class="${cls}" data-date="${key}" ${disabled?'disabled':''} aria-label="${key}">${day}</button>`);
   }
-  function monthHTML(month){
-    const first = new Date(month.getFullYear(),month.getMonth(),1);
-    const offset=(first.getDay()+6)%7;
-    const daysInMonth=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();
-    const weekdays=['MON','TUE','WED','THU','FRI','SAT','SUN'];
-    let cells=Array(offset).fill('<span></span>');
-    for(let day=1;day<=daysInMonth;day++){
-      const d=new Date(month.getFullYear(),month.getMonth(),day), key=iso(d);
-      const isStart=same(d,start), isEnd=same(d,end), inRange=start&&end&&d>start&&d<end;
-      const disabled=d<today;
-      const cls=['admin-day',isStart||isEnd?'selected':'',inRange?'in-range':'',isStart||isEnd?'range-edge':'',same(d,today)?'today':''].filter(Boolean).join(' ');
-      cells.push(`<button type="button" class="${cls}" data-date="${key}" ${disabled?'disabled':''} aria-label="${key}">${day}</button>`);
-    }
-    return `<section class="admin-month"><div class="admin-month-title">${month.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</div><div class="admin-weekdays">${weekdays.map(x=>`<span>${x}</span>`).join('')}</div><div class="admin-days">${cells.join('')}</div></section>`;
-  }
-  function choose(d){
-    if(!start || end || d<start){start=d;end=null;}
-    else {end=d;}
-    sync();render();
-  }
-  function sync(){startInput.value=start?iso(start):'';endInput.value=end?iso(end):'';}
-  function openCalendar(){ isOpen=true; root.hidden=false; render(); }
-  function closeCalendar(){ isOpen=false; root.hidden=true; }
-  [startInput,endInput].forEach(input=>{
-    // iOS Safari can miss a click handler on readonly text fields when scripts are served from a nested /admin route.
-    const activate = event => { event.stopPropagation(); openCalendar(); };
-    input.addEventListener('pointerdown', activate);
-    input.addEventListener('click', activate);
-    input.addEventListener('focus', openCalendar);
-  });
-  root.addEventListener('click', event => event.stopPropagation());
-  document.addEventListener('click',event=>{ if(isOpen && !root.contains(event.target) && event.target!==startInput && event.target!==endInput) closeCalendar(); });
-  form.addEventListener('reset',()=>{start=end=null;sync();closeCalendar();render();});
-  render();
+  return `<section class="admin-month"><div class="admin-month-title">${month.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</div><div class="admin-weekdays">${weekdays.map(x=>`<span>${x}</span>`).join('')}</div><div class="admin-days">${cells.join('')}</div></section>`;
+ }
+ function choose(d){
+  if(!start||end||d<start){start=d;end=null;sync();render();return}
+  if(d<=start){start=d;end=null;sync();render();return}
+  end=d;sync();closeCalendar();
+ }
+ function sync(){startInput.value=start?iso(start):'';endInput.value=end?iso(end):'';rangeInput.value=start?(end?`${fmt(start)} — ${fmt(end)}`:`${fmt(start)} — Choose checkout`):'';}
+ function openCalendar(){if(isOpen)return;isOpen=true;root.hidden=false;rangeInput.setAttribute('aria-expanded','true');render()}
+ function closeCalendar(){isOpen=false;root.hidden=true;rangeInput.setAttribute('aria-expanded','false')}
+ rangeInput.addEventListener('click',e=>{e.stopPropagation();isOpen?closeCalendar():openCalendar()});
+ rangeInput.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCalendar()}if(e.key==='Escape')closeCalendar()});
+ root.addEventListener('click',e=>e.stopPropagation());
+ document.addEventListener('click',e=>{if(isOpen&&!root.contains(e.target)&&e.target!==rangeInput)closeCalendar()});
+ form.addEventListener('reset',()=>{start=end=null;sync();closeCalendar();render()});
+ form.addEventListener('submit',e=>{if(!start||!end){e.preventDefault();rangeInput.setCustomValidity('Please select both start and checkout dates.');rangeInput.reportValidity()}else rangeInput.setCustomValidity('')});
+ sync();render();
 })();
   </script>
 </body>
