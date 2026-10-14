@@ -37,7 +37,7 @@ REVIEW CARD
 
 #reviewContainer .review-card{
     display:grid !important;
-    grid-template-columns:118px minmax(0, 1fr) !important;
+    grid-template-columns:156px minmax(0, 1fr) !important;
     grid-template-areas:"author review" !important;
     align-items:center !important;
     column-gap:24px !important;
@@ -378,7 +378,7 @@ RESPONSIVE
 
 @media(max-width:768px){
     #reviewContainer .review-card{
-        grid-template-columns:118px minmax(0, 1fr) !important;
+        grid-template-columns:156px minmax(0, 1fr) !important;
         column-gap:24px !important;
         padding:24px 0 !important;
     }
