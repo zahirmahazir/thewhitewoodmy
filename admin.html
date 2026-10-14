@@ -27,7 +27,7 @@
           <div><p class="eyebrow">BLOCK DATES</p><h2>Create manual block</h2></div>
           <label>Listing<select name="listingId" required><option value="white-wood">The White Wood Homestay</option><option value="rumah-puteh">Rumah Puteh</option></select></label>
           <label class="range-date-label">Dates to block
-            <input id="adminDateRange" type="text" placeholder="Choose start and end dates" readonly autocomplete="off" aria-haspopup="dialog" aria-expanded="false">
+            <button id="adminDateRange" class="admin-date-range-toggle" type="button" aria-haspopup="dialog" aria-expanded="false"><span id="adminDateRangeLabel">Choose your dates</span><span aria-hidden="true" class="date-range-icon">▦</span></button>
           </label>
           <input id="adminStartDate" name="startDate" type="hidden">
           <input id="adminEndDate" name="endDate" type="hidden">
@@ -38,15 +38,10 @@
           <button class="button" type="submit">Block dates</button><p id="blockMessage" class="message" role="status"></p>
         </form>
         <div class="section-heading"><h2>Current blocks</h2><span class="muted">Checkout date is not blocked as a night.</span></div>
-        <div id="blocksList" class="cards"><p class="muted">Loading blocks…</p></div>
-      </section>
-    </section>
-  </main>
-  <script src="/admin.js" defer></script>
-  <script>
+        <div id="blocksList" class="cards"><p class="muted">Loading blocks…</p></di  <script>
 (() => {
  const root=document.getElementById('adminCalendar'); if(!root)return;
- const form=document.getElementById('blockForm'), rangeInput=document.getElementById('adminDateRange');
+ const form=document.getElementById('blockForm'), rangeButton=document.getElementById('adminDateRange'), rangeLabel=document.getElementById('adminDateRangeLabel');
  const startInput=document.getElementById('adminStartDate'), endInput=document.getElementById('adminEndDate');
  const today=new Date(); today.setHours(0,0,0,0);
  let shown=new Date(today.getFullYear(),today.getMonth(),1), start=null,end=null,isOpen=false;
@@ -54,40 +49,46 @@
  const pad=n=>String(n).padStart(2,'0');
  const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
  const parse=s=>{if(!s)return null;const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
- const fmt=d=>d?d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'';
+ const fmt=d=>d?d.toLocaleDateString('en-MY',{day:'numeric',month:'short',year:'numeric'}):'';
  const same=(a,b)=>a&&b&&iso(a)===iso(b);
  function render(){
   const months=[new Date(shown),new Date(shown.getFullYear(),shown.getMonth()+1,1)];
-  root.innerHTML=`<div class="admin-calendar-head"><button class="admin-calendar-nav" type="button" data-move="-1" aria-label="Previous month">‹</button><span class="calendar-eyebrow">SELECT BLOCK DATES</span><button class="admin-calendar-nav" type="button" data-move="1" aria-label="Next month">›</button></div><div class="admin-calendar-months">${months.map(monthHTML).join('')}</div><div class="admin-calendar-foot"><span>${start?`START: ${fmt(start)}${end?` → END: ${fmt(end)}`:' → Choose checkout'}`:'Select start date, then end date'}</span><div class="admin-calendar-actions"><button type="button" class="admin-calendar-clear">Clear dates</button><button type="button" class="admin-calendar-done">Close</button></div></div>`;
+  root.innerHTML=`<div class="calendar-toolbar"><button type="button" data-move="-1" aria-label="Previous month">‹</button><span class="admin-calendar-caption">SELECT BLOCK DATES</span><button type="button" data-move="1" aria-label="Next month">›</button></div><div class="calendar-months">${months.map(monthHTML).join('')}</div><div class="calendar-footer"><span>${start?`CHECK-IN: ${fmt(start)}${end?` → CHECK-OUT: ${fmt(end)}`:' → Select checkout'}`:'Select check-in, then check-out'}</span><button type="button" class="calendar-done">Done</button></div>`;
   root.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>{shown.setMonth(shown.getMonth()+Number(b.dataset.move));render()}));
   root.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>choose(parse(b.dataset.date))));
-  root.querySelector('.admin-calendar-clear').addEventListener('click',()=>{start=end=null;sync();render()});
-  root.querySelector('.admin-calendar-done').addEventListener('click',closeCalendar);
+  root.querySelector('.calendar-done').addEventListener('click',closeCalendar);
  }
  function monthHTML(month){
   const first=new Date(month.getFullYear(),month.getMonth(),1),offset=(first.getDay()+6)%7,daysInMonth=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();
-  const weekdays=['MON','TUE','WED','THU','FRI','SAT','SUN'];let cells=Array(offset).fill('<span></span>');
+  const weekdays=['MON','TUE','WED','THU','FRI','SAT','SUN'];let cells=Array(offset).fill('<span class="calendar-day empty" aria-hidden="true"></span>');
   for(let day=1;day<=daysInMonth;day++){
    const d=new Date(month.getFullYear(),month.getMonth(),day),key=iso(d),isStart=same(d,start),isEnd=same(d,end),inRange=start&&end&&d>start&&d<end,disabled=d<today;
-   const cls=['admin-day',isStart||isEnd?'selected':'',inRange?'in-range':'',isStart||isEnd?'range-edge':'',same(d,today)?'today':''].filter(Boolean).join(' ');
+   const cls=['calendar-day',isStart?'range-start':'',isEnd?'range-end':'',inRange?'range-middle':'',disabled?'is-disabled':''].filter(Boolean).join(' ');
    cells.push(`<button type="button" class="${cls}" data-date="${key}" ${disabled?'disabled':''} aria-label="${key}">${day}</button>`);
   }
-  return `<section class="admin-month"><div class="admin-month-title">${month.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</div><div class="admin-weekdays">${weekdays.map(x=>`<span>${x}</span>`).join('')}</div><div class="admin-days">${cells.join('')}</div></section>`;
+  return `<section class="calendar-month"><h4>${month.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</h4><div class="calendar-weekdays">${weekdays.map(x=>`<span>${x}</span>`).join('')}</div><div class="calendar-days">${cells.join('')}</div></section>`;
  }
  function choose(d){
   if(!start||end||d<start){start=d;end=null;sync();render();return}
   if(d<=start){start=d;end=null;sync();render();return}
   end=d;sync();closeCalendar();
  }
- function sync(){startInput.value=start?iso(start):'';endInput.value=end?iso(end):'';rangeInput.value=start?(end?`${fmt(start)} — ${fmt(end)}`:`${fmt(start)} — Choose checkout`):'';}
- function openCalendar(){if(isOpen)return;isOpen=true;root.hidden=false;rangeInput.setAttribute('aria-expanded','true');render()}
- function closeCalendar(){isOpen=false;root.hidden=true;rangeInput.setAttribute('aria-expanded','false')}
- rangeInput.addEventListener('click',e=>{e.stopPropagation();isOpen?closeCalendar():openCalendar()});
- rangeInput.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCalendar()}if(e.key==='Escape')closeCalendar()});
+ function sync(){
+  startInput.value=start?iso(start):'';endInput.value=end?iso(end):'';
+  rangeLabel.textContent=start?(end?`${fmt(start)} → ${fmt(end)}`:`${fmt(start)} → Choose checkout`):'Choose your dates';
+ }
+ function openCalendar(){if(isOpen)return;isOpen=true;root.hidden=false;rangeButton.setAttribute('aria-expanded','true');render()}
+ function closeCalendar(){isOpen=false;root.hidden=true;rangeButton.setAttribute('aria-expanded','false')}
+ rangeButton.addEventListener('click',e=>{e.stopPropagation();isOpen?closeCalendar():openCalendar()});
+ rangeButton.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCalendar()}if(e.key==='Escape')closeCalendar()});
  root.addEventListener('click',e=>e.stopPropagation());
- document.addEventListener('click',e=>{if(isOpen&&!root.contains(e.target)&&e.target!==rangeInput)closeCalendar()});
+ document.addEventListener('click',e=>{if(isOpen&&!root.contains(e.target)&&e.target!==rangeButton&&!rangeButton.contains(e.target))closeCalendar()});
  form.addEventListener('reset',()=>{start=end=null;sync();closeCalendar();render()});
- form.addEventListener('submit',e=>{if(!start||!end){e.preventDefault();rangeInput.setCustomValidity('Please select both start and checkout dates.');rangeInput.reportValidity()}else rangeInput.setCustomValidity('')});
+ form.addEventListener('submit',e=>{if(!start||!end){e.preventDefault();rangeButton.setCustomValidity?.('Please select both start and checkout dates.');rangeButton.focus();}else rangeButton.setCustomValidity?.('')});
+ sync();render();
+})();
+  </script>
+alidity()}else rangeInput.setCustomValidity('')});
  sync();render();
 })();
   </script>
