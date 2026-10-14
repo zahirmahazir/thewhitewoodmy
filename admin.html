@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin | The White Wood</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/">thewhitewood.my <span>ADMIN</span></a><button id="logoutBtn" class="button button-quiet hidden" type="button">Lock dashboard</button></header>
+  <main class="wrap">
+    <section id="loginPanel" class="panel login-panel">
+      <p class="eyebrow">PRIVATE AREA</p><h1>Admin dashboard</h1><p class="muted">Enter the Cloudflare <code>ADMIN_API_TOKEN</code>. The token is kept in this browser tab only and is never saved in the website files.</p>
+      <form id="loginForm"><label for="tokenInput">Admin API token</label><input id="tokenInput" type="password" autocomplete="current-password" required><button class="button" type="submit">Unlock dashboard</button><p id="loginMessage" class="message" role="status"></p></form>
+    </section>
+    <section id="dashboard" class="hidden">
+      <div class="page-heading"><div><p class="eyebrow">BOOKINGS & AVAILABILITY</p><h1>Manage stays</h1><p class="muted">Changes are saved directly to the D1 database.</p></div><button id="refreshBtn" class="button button-light" type="button">Refresh data</button></div>
+      <p id="globalMessage" class="message" role="status"></p>
+      <nav class="tabs" aria-label="Admin sections"><button class="tab active" data-tab="bookings" type="button">Bookings</button><button class="tab" data-tab="blocks" type="button">Manual blocks</button></nav>
+      <section id="bookingsTab" class="tab-panel">
+        <div class="toolbar"><label>Listing<select id="bookingListing"><option value="">Both listings</option><option value="white-wood">The White Wood Homestay</option><option value="rumah-puteh">Rumah Puteh</option></select></label><label>Status<select id="bookingStatus"><option value="">All statuses</option><option>pending</option><option>confirmed</option><option>cancelled</option><option>rejected</option><option>completed</option></select></label></div>
+        <div id="bookingsList" class="cards"><p class="muted">Loading bookings…</p></div>
+      </section>
+      <section id="blocksTab" class="tab-panel hidden">
+        <form id="blockForm" class="panel block-form">
+          <div><p class="eyebrow">BLOCK DATES</p><h2>Create manual block</h2></div>
+          <label>Listing<select name="listingId" required><option value="white-wood">The White Wood Homestay</option><option value="rumah-puteh">Rumah Puteh</option></select></label>
+          <div class="date-grid"><label>Start date<input name="startDate" type="date" required></label><label>End date (checkout)<input name="endDate" type="date" required></label></div>
+          <label>Reason<select name="source" required><option value="airbnb">Airbnb</option><option value="agoda">Agoda</option><option value="whatsapp">WhatsApp</option><option value="private">Private booking</option><option value="maintenance">Maintenance</option><option value="admin">Other / Admin</option></select></label>
+          <label>Label<input name="label" maxlength="120" placeholder="e.g. TEST ONLY or external reservation"></label>
+          <label>Notes<textarea name="notes" rows="2" maxlength="2000" placeholder="Optional notes"></textarea></label>
+          <button class="button" type="submit">Block dates</button><p id="blockMessage" class="message" role="status"></p>
+        </form>
+        <div class="section-heading"><h2>Current blocks</h2><span class="muted">Checkout date is not blocked as a night.</span></div>
+        <div id="blocksList" class="cards"><p class="muted">Loading blocks…</p></div>
+      </section>
+    </section>
+  </main>
+  <script src="admin.js" defer></script>
+</body>
+</html>
