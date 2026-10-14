@@ -45,7 +45,14 @@
   function sync(){startInput.value=start?iso(start):'';endInput.value=end?iso(end):'';}
   function openCalendar(){ isOpen=true; root.hidden=false; render(); }
   function closeCalendar(){ isOpen=false; root.hidden=true; }
-  [startInput,endInput].forEach(input=>{ input.addEventListener('click',openCalendar); input.addEventListener('focus',openCalendar); });
+  [startInput,endInput].forEach(input=>{
+    // iOS Safari can miss a click handler on readonly text fields when scripts are served from a nested /admin route.
+    const activate = event => { event.stopPropagation(); openCalendar(); };
+    input.addEventListener('pointerdown', activate);
+    input.addEventListener('click', activate);
+    input.addEventListener('focus', openCalendar);
+  });
+  root.addEventListener('click', event => event.stopPropagation());
   document.addEventListener('click',event=>{ if(isOpen && !root.contains(event.target) && event.target!==startInput && event.target!==endInput) closeCalendar(); });
   form.addEventListener('reset',()=>{start=end=null;sync();closeCalendar();render();});
   render();
