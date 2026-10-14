@@ -71,3 +71,16 @@ h1,h2,h3,.brand{font-family:"Josefin Sans","Trebuchet MS",Arial,sans-serif}
 #adminCalendar .calendar-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:#666}
 #adminCalendar .calendar-footer button{border:0;background:var(--ink);color:#fff;padding:8px 13px;font:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
 @media(max-width:640px){#adminCalendar{padding:8px}#adminCalendar .calendar-months{gap:8px}#adminCalendar .calendar-month h4{font-size:12px}#adminCalendar .calendar-weekdays span{font-size:8px;padding:5px 0}#adminCalendar .calendar-day{font-size:11px}#adminCalendar .calendar-footer{font-size:10px}}
+
+
+/* Mobile calendar layout fix: keep weekday labels and day cells in a stable 7-column grid */
+#adminCalendar{box-sizing:border-box;width:100%;max-width:100%;overflow:hidden;padding:12px;border:1px solid var(--line,#e7e1d7);background:#fff}
+#adminCalendar *{box-sizing:border-box}
+#adminCalendar .admin-calendar-months,#adminCalendar .calendar-months{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;width:100%;min-width:0}
+#adminCalendar .admin-month,#adminCalendar .calendar-month{width:100%;min-width:0}
+#adminCalendar .admin-weekdays,#adminCalendar .admin-days,#adminCalendar .calendar-weekdays,#adminCalendar .calendar-days{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:3px;width:100%;min-width:0;text-align:center}
+#adminCalendar .admin-weekdays span,#adminCalendar .calendar-weekdays span{display:block;min-width:0;text-align:center;font-size:10px;letter-spacing:0;padding:5px 0;color:#716b62;white-space:nowrap}
+#adminCalendar .admin-day,#adminCalendar .calendar-day{width:100%;min-width:0;height:36px;padding:0;font-size:12px;line-height:1;border-radius:5px;touch-action:manipulation}
+#adminCalendar .admin-calendar-head,#adminCalendar .calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+#adminCalendar .admin-calendar-caption{font-size:12px;letter-spacing:.08em;text-align:center}
+@media(max-width:700px){#adminCalendar{padding:10px;margin-top:10px}#adminCalendar .admin-calendar-months,#adminCalendar .calendar-months{grid-template-columns:minmax(0,1fr)!important;gap:14px}#adminCalendar .admin-month:nth-child(2),#adminCalendar .calendar-month:nth-child(2){display:block}#adminCalendar .admin-month-title,#adminCalendar .calendar-month h4{font-size:14px;margin:8px 0 10px}#adminCalendar .admin-weekdays span,#adminCalendar .calendar-weekdays span{font-size:9px;padding:4px 0}#adminCalendar .admin-day,#adminCalendar .calendar-day{height:36px;font-size:12px}}
