@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Admin | The White Wood</title>
-  <link rel="stylesheet" href="/admin.css?v=calendarfix2">
+  <link rel="stylesheet" href="admin.css">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="/">thewhitewood.my <span>ADMIN</span></a><button id="logoutBtn" class="button button-quiet hidden" type="button">Lock dashboard</button></header>
@@ -38,7 +38,11 @@
           <button class="button" type="submit">Block dates</button><p id="blockMessage" class="message" role="status"></p>
         </form>
         <div class="section-heading"><h2>Current blocks</h2><span class="muted">Checkout date is not blocked as a night.</span></div>
-        <div id="blocksList" class="cards"><p class="muted">Loading blocks…</p></di  <script>
+        <div id="blocksList" class="cards"><p class="muted">Loading blocks…</p></div>
+      </section>
+    </section>
+  </main>
+  <script>
 (() => {
  const root=document.getElementById('adminCalendar'); if(!root)return;
  const form=document.getElementById('blockForm'), rangeButton=document.getElementById('adminDateRange'), rangeLabel=document.getElementById('adminDateRangeLabel');
@@ -88,9 +92,6 @@
  sync();render();
 })();
   </script>
-alidity()}else rangeInput.setCustomValidity('')});
- sync();render();
-})();
-  </script>
+  <script src="admin.js" defer></script>
 </body>
 </html>
