@@ -117,3 +117,24 @@ h1,h2,h3,.brand{font-family:"Josefin Sans","Trebuchet MS",Arial,sans-serif}
 
 /* Typography-only override: keep the current layout and calendar styles unchanged */
 html, body, body *, body *::before, body *::after { font-family: "Josefin Sans", Arial, sans-serif; }
+
+
+/* Unified booking dashboard categories */
+.category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0 18px}
+.category-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;text-align:left;padding:17px 18px;background:#fff;border:1px solid var(--line);color:var(--ink);cursor:pointer;font:inherit;transition:border-color .15s,background .15s}
+.category-card:hover{border-color:var(--gold)}
+.category-card.active{border-color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold);background:#fcfaf5}
+.category-label{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.category-card strong{font-size:30px;line-height:1.1;font-weight:600}
+.category-hint{font-size:12px;line-height:1.4;color:var(--muted)}
+#recordsHeading{margin:0}
+.manual-block-details{margin-top:30px;border:1px solid var(--line);background:#fff}
+.manual-block-details>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;cursor:pointer;list-style:none}
+.manual-block-details>summary::-webkit-details-marker{display:none}
+.manual-block-details>summary strong,.manual-block-details>summary small{display:block}
+.manual-block-details>summary strong{font-size:15px}
+.manual-block-details>summary small{margin-top:5px;color:var(--muted);font-size:12px;font-weight:400}
+.manual-block-content{padding:0 20px 20px;border-top:1px solid var(--line)}
+.manual-block-content .block-form{margin-top:20px}
+.item-card .pill.source-pill{background:#f0ede7;color:#514b42}
+@media(max-width:700px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.category-card{padding:14px}.category-card strong{font-size:26px}.category-hint{font-size:11px}.manual-block-details>summary{padding:15px}.manual-block-content{padding:0 12px 14px}}
