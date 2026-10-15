@@ -43,116 +43,119 @@ REVIEWS SECTION
 REVIEW CARD
 ==================================================*/
 
-#reviewContainer .review-card{
-    display:flex !important;
-    align-items:center !important;
-    gap:24px !important;
-    width:100% !important;
-    min-width:0 !important;
-    box-sizing:border-box !important;
-    padding:28px 0 !important;
-    margin:0 !important;
-    border:0 !important;
-    border-bottom:1px solid #dedede !important;
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
-    backdrop-filter:none !important;
-    transition:none !important;
-    scroll-snap-align:none !important;
+.review-card{
+
+    min-width:360px;
+
+    scroll-snap-align:start;
+
+    padding:35px;
+
+    border-radius:22px;
+
+    background:rgba(255,255,255,.05);
+
+    backdrop-filter:blur(20px);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    transition:.35s ease;
+
 }
 
-#reviewContainer .review-card:hover{
-    transform:none !important;
-    border-color:#dedede !important;
-    box-shadow:none !important;
+.review-card:hover{
+
+    transform:translateY(-8px);
+
+    border-color:rgba(184,134,11,.35);
+
+    box-shadow:
+
+    0 20px 45px rgba(0,0,0,.35);
+
 }
 
-#reviewContainer .review-card__footer{
-    flex:0 0 156px !important;
-    width:156px !important;
-    min-width:156px !important;
-    max-width:156px !important;
-    box-sizing:border-box !important;
-    display:flex !important;
-    align-items:center !important;
-    gap:12px !important;
-    padding:0 !important;
-    margin:0 !important;
-    overflow:hidden !important;
+.review-card__stars{
+
+    display:flex;
+
+    gap:6px;
+
+    margin-bottom:18px;
+
 }
 
-#reviewContainer .review-card__avatar{
-    flex:0 0 38px !important;
-    width:38px !important;
-    height:38px !important;
-    border-radius:50% !important;
-    background:var(--gold-dark) !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    color:#fff !important;
-    font-weight:600 !important;
-    font-size:1rem !important;
+.review-card__stars svg{
+
+    width:18px;
+
+    fill:var(--gold);
+
 }
 
-#reviewContainer .review-card__info{
-    flex:1 1 0 !important;
-    width:0 !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    box-sizing:border-box !important;
+.review-card__text{
+
+    color:var(--text);
+
+    line-height:1.9;
+
+    margin-bottom:28px;
+
+    min-height:120px;
+
 }
 
-#reviewContainer .review-card__info h4{
-    font-size:1rem !important;
-    line-height:1.2 !important;
-    margin:0 0 4px !important;
-    overflow-wrap:anywhere !important;
+.review-card__footer{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:16px;
+
 }
 
-#reviewContainer .review-card__info span{
-    display:block !important;
-    color:#777 !important;
-    font-size:.82rem !important;
-    line-height:1.4 !important;
+.review-card__avatar{
+
+    width:58px;
+
+    height:58px;
+
+    border-radius:50%;
+
+    background:var(--gold-dark);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:#fff;
+
+    font-weight:600;
+
+    font-size:1rem;
+
 }
 
-#reviewContainer .review-card__content{
-    flex:1 1 0 !important;
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:stretch !important;
-    min-width:0 !important;
-    width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
+.review-card__info h4{
+
+    font-size:1rem;
+
+    margin-bottom:4px;
+
 }
 
-#reviewContainer .review-card__stars,
-#reviewContainer .review-card__text{
-    display:block !important;
-    width:100% !important;
-    box-sizing:border-box !important;
-    padding:0 !important;
-    text-align:left !important;
+.review-card__info span{
+
+    color:#999;
+
+    font-size:.88rem;
+
 }
 
-#reviewContainer .review-card__stars{
-    margin:0 0 12px !important;
-    color:var(--gold) !important;
-    letter-spacing:1px !important;
-    line-height:1.2 !important;
-    white-space:nowrap !important;
-}
 
-#reviewContainer .review-card__text{
-    color:var(--text) !important;
-    line-height:1.8 !important;
-    margin:0 !important;
-    min-height:0 !important;
-    overflow-wrap:anywhere !important;
-}
 
 /*==================================================
 GOOGLE SUMMARY
@@ -385,40 +388,56 @@ RESPONSIVE
 ==================================================*/
 
 @media(max-width:768px){
-    #reviewContainer .review-card{
-        gap:24px !important;
-        padding:24px 0 !important;
+
+    .review-card{
+
+        min-width:300px;
+
     }
 
-    #reviewContainer .review-card__footer{
-        flex-basis:156px !important;
-        width:156px !important;
-        min-width:156px !important;
-        max-width:156px !important;
-    }
 }
+
+
 
 @media(max-width:480px){
-    #reviewContainer .review-card{
-        flex-direction:column !important;
-        align-items:stretch !important;
-        gap:14px !important;
-        padding:22px 0 !important;
+
+    .review-card{
+
+        min-width:260px;
+
+        padding:28px;
+
     }
 
-    #reviewContainer .review-card__footer{
-        flex:0 1 156px !important;
-        width:156px !important;
-        min-width:0 !important;
-        max-width:156px !important;
-    }
-
-    #reviewContainer .review-card__content{
-        flex:0 0 auto !important;
-        width:100% !important;
-    }
 }
+
+
 
 /*==================================================
 END
 ==================================================*/
+
+/* Mobile Google Reviews spacing */
+@media (max-width: 480px) {
+    .review-summary {
+        margin-bottom: 12px !important;
+    }
+
+    #reviewContainer .review-card {
+        padding-top: 14px !important;
+        padding-bottom: 14px !important;
+        gap: 10px !important;
+    }
+
+    #reviewContainer .review-card__footer {
+        margin-bottom: 0 !important;
+    }
+
+    #reviewContainer .review-card__stars {
+        margin-bottom: 6px !important;
+    }
+
+    #reviewContainer .review-card__text {
+        line-height: 1.65 !important;
+    }
+}
