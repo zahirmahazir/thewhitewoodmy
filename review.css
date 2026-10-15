@@ -70,12 +70,16 @@ REVIEW CARD
 
 #reviewContainer .review-card__footer{
     flex:0 0 156px !important;
+    width:156px !important;
+    min-width:156px !important;
+    max-width:156px !important;
+    box-sizing:border-box !important;
     display:flex !important;
     align-items:center !important;
     gap:12px !important;
-    min-width:0 !important;
     padding:0 !important;
     margin:0 !important;
+    overflow:hidden !important;
 }
 
 #reviewContainer .review-card__avatar{
@@ -93,8 +97,11 @@ REVIEW CARD
 }
 
 #reviewContainer .review-card__info{
-    flex:1 1 auto !important;
+    flex:1 1 0 !important;
+    width:0 !important;
     min-width:0 !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
 }
 
 #reviewContainer .review-card__info h4{
@@ -385,6 +392,9 @@ RESPONSIVE
 
     #reviewContainer .review-card__footer{
         flex-basis:156px !important;
+        width:156px !important;
+        min-width:156px !important;
+        max-width:156px !important;
     }
 }
 
@@ -397,8 +407,10 @@ RESPONSIVE
     }
 
     #reviewContainer .review-card__footer{
-        flex:0 0 auto !important;
-        width:100% !important;
+        flex:0 1 156px !important;
+        width:156px !important;
+        min-width:0 !important;
+        max-width:156px !important;
     }
 
     #reviewContainer .review-card__content{
