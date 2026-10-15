@@ -21,34 +21,37 @@
         <div class="category-grid" id="categoryGrid" aria-label="Filter records by category">
           <button class="category-card active" type="button" data-category="booking"><span class="category-label">Booking</span><strong id="countBooking">0</strong><span class="category-hint">Reservations & other blocks</span></button>
           <button class="category-card" type="button" data-category="whatsapp"><span class="category-label">WhatsApp</span><strong id="countWhatsapp">0</strong><span class="category-hint">Direct / WhatsApp</span></button>
-          <button class="category-card" type="button" data-category="airbnb"><span class="category-label">Airbnb</span><strong id="countAirbnb">0</strong><span class="category-hint">Airbnb stays</span></button>
+          <button class="category-card" type="button" data-category="airbnb"><span class="category-label">Airbnb</span><strong id="countAirbnb">0</strong><span class="category-hint">Airbnb & Agoda stays</span></button>
+          <button class="category-card" type="button" data-category="maintenance"><span class="category-label">Maintenance</span><strong id="countMaintenance">0</strong><span class="category-hint">Maintenance blocks</span></button>
           <button class="category-card" type="button" data-category="cancelled"><span class="category-label">Cancelled</span><strong id="countCancelled">0</strong><span class="category-hint">Cancelled reservations</span></button>
         </div>
-        <div class="toolbar">
+        <div class="toolbar booking-toolbar">
           <label>Listing<select id="bookingListing"><option value="">Both listings</option><option value="white-wood">The White Wood Homestay</option><option value="rumah-puteh">Rumah Puteh</option></select></label>
           <label>Status<select id="bookingStatus"><option value="">All statuses</option><option>pending</option><option>confirmed</option><option>cancelled</option><option>rejected</option><option>completed</option></select></label>
+          <label>Sort by<select id="recordSort"><option value="newest">Newest first</option><option value="month-desc">Month (latest first)</option><option value="month-asc">Month (oldest first)</option></select></label>
+          <details class="manual-block-details" id="manualBlockDetails">
+            <summary><span><strong>＋ Manual block</strong><small>Block dates / add external stay</small></span></summary>
+            <div class="manual-block-content">
+              <form id="blockForm" class="panel block-form">
+                <div><p class="eyebrow">BLOCK DATES</p><h2>Create manual block</h2></div>
+                <label>Listing<select name="listingId" required><option value="white-wood">The White Wood Homestay</option><option value="rumah-puteh">Rumah Puteh</option></select></label>
+                <label class="range-date-label">Dates to block
+                  <button id="adminDateRange" class="admin-date-range-toggle" type="button" aria-haspopup="dialog" aria-expanded="false"><span id="adminDateRangeLabel">Choose your dates</span><span aria-hidden="true" class="date-range-icon">▦</span></button>
+                </label>
+                <input id="adminStartDate" name="startDate" type="hidden">
+                <input id="adminEndDate" name="endDate" type="hidden">
+                <div id="adminCalendar" class="admin-calendar" aria-label="Choose block dates" hidden></div>
+                <label>Reason<select name="source" required><option value="airbnb">Airbnb</option><option value="agoda">Agoda</option><option value="whatsapp">WhatsApp</option><option value="private">Private booking</option><option value="maintenance">Maintenance</option><option value="admin">Other / Admin</option></select></label>
+                <label>Label<input name="label" maxlength="120" placeholder="e.g. guest name or external reservation"></label>
+                <label>Notes<textarea name="notes" rows="2" maxlength="2000" placeholder="Optional notes"></textarea></label>
+                <button class="button" type="submit">Block dates</button><p id="blockMessage" class="message" role="status"></p>
+              </form>
+            </div>
+          </details>
         </div>
         <div class="section-heading"><h2 id="recordsHeading">Booking</h2><span id="recordsCount" class="muted">Loading records…</span></div>
         <div id="bookingsList" class="cards"><p class="muted">Loading bookings…</p></div>
-        <details class="manual-block-details" id="manualBlockDetails">
-          <summary><span><strong>Manual blocks</strong><small>Create a WhatsApp, Airbnb or other date block</small></span><span aria-hidden="true">＋</span></summary>
-          <div class="manual-block-content">
-        <form id="blockForm" class="panel block-form">
-          <div><p class="eyebrow">BLOCK DATES</p><h2>Create manual block</h2></div>
-          <label>Listing<select name="listingId" required><option value="white-wood">The White Wood Homestay</option><option value="rumah-puteh">Rumah Puteh</option></select></label>
-          <label class="range-date-label">Dates to block
-            <button id="adminDateRange" class="admin-date-range-toggle" type="button" aria-haspopup="dialog" aria-expanded="false"><span id="adminDateRangeLabel">Choose your dates</span><span aria-hidden="true" class="date-range-icon">▦</span></button>
-          </label>
-          <input id="adminStartDate" name="startDate" type="hidden">
-          <input id="adminEndDate" name="endDate" type="hidden">
-          <div id="adminCalendar" class="admin-calendar" aria-label="Choose block dates" hidden></div>
-          <label>Reason<select name="source" required><option value="airbnb">Airbnb</option><option value="agoda">Agoda</option><option value="whatsapp">WhatsApp</option><option value="private">Private booking</option><option value="maintenance">Maintenance</option><option value="admin">Other / Admin</option></select></label>
-          <label>Label<input name="label" maxlength="120" placeholder="e.g. TEST ONLY or external reservation"></label>
-          <label>Notes<textarea name="notes" rows="2" maxlength="2000" placeholder="Optional notes"></textarea></label>
-          <button class="button" type="submit">Block dates</button><p id="blockMessage" class="message" role="status"></p>
-        </form>
-          </div>
-        </details>
+
       </section>
     </section>
   </main>

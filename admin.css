@@ -119,22 +119,29 @@ h1,h2,h3,.brand{font-family:"Josefin Sans","Trebuchet MS",Arial,sans-serif}
 html, body, body *, body *::before, body *::after { font-family: "Josefin Sans", Arial, sans-serif; }
 
 
-/* Unified booking dashboard categories */
-.category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0 18px}
-.category-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;text-align:left;padding:17px 18px;background:#fff;border:1px solid var(--line);color:var(--ink);cursor:pointer;font:inherit;transition:border-color .15s,background .15s}
-.category-card:hover{border-color:var(--gold)}
+/* Unified booking categories and inline manual-block creator */
+.category-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:18px 0}
+.category-card{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;text-align:left;padding:16px 18px;background:#fff;border:1px solid var(--line);color:var(--ink);font:inherit;cursor:pointer}
+.category-card .category-label{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}
+.category-card strong{font-size:28px;line-height:1}
+.category-card .category-hint{font-size:12px;color:var(--muted);line-height:1.4}
 .category-card.active{border-color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold);background:#fcfaf5}
-.category-label{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
-.category-card strong{font-size:30px;line-height:1.1;font-weight:600}
-.category-hint{font-size:12px;line-height:1.4;color:var(--muted)}
-#recordsHeading{margin:0}
-.manual-block-details{margin-top:30px;border:1px solid var(--line);background:#fff}
-.manual-block-details>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;cursor:pointer;list-style:none}
+.booking-toolbar{display:grid!important;grid-template-columns:minmax(150px,1fr) minmax(140px,.85fr) minmax(160px,.9fr) minmax(220px,1.25fr);align-items:start;gap:12px!important}
+.booking-toolbar>label{min-width:0!important;margin:0}
+.manual-block-details{position:relative;min-width:0;background:#fff;border:1px solid var(--line)}
+.manual-block-details>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:46px;padding:10px 12px;cursor:pointer;list-style:none;font-size:13px}
 .manual-block-details>summary::-webkit-details-marker{display:none}
-.manual-block-details>summary strong,.manual-block-details>summary small{display:block}
-.manual-block-details>summary strong{font-size:15px}
-.manual-block-details>summary small{margin-top:5px;color:var(--muted);font-size:12px;font-weight:400}
-.manual-block-content{padding:0 20px 20px;border-top:1px solid var(--line)}
-.manual-block-content .block-form{margin-top:20px}
-.item-card .pill.source-pill{background:#f0ede7;color:#514b42}
-@media(max-width:700px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.category-card{padding:14px}.category-card strong{font-size:26px}.category-hint{font-size:11px}.manual-block-details>summary{padding:15px}.manual-block-content{padding:0 12px 14px}}
+.manual-block-details>summary strong{display:block;font-size:12px;letter-spacing:.04em}
+.manual-block-details>summary small{display:block;margin-top:4px;color:var(--muted);font-size:11px;font-weight:400}
+.manual-block-details[open]{z-index:8;border-color:var(--gold)}
+.manual-block-content{position:absolute;right:0;top:calc(100% + 6px);width:min(440px,calc(100vw - 32px));max-height:min(75vh,720px);overflow:auto;background:#fff;border:1px solid var(--line);box-shadow:0 12px 32px rgba(25,24,23,.14);z-index:10}
+.manual-block-content .block-form{max-width:none;margin:0;border:0;padding:18px}
+.manual-block-content .block-form h2{font-size:19px}
+.manual-block-content .block-form label{margin-bottom:10px}
+.manual-block-content .block-form input,.manual-block-content .block-form select,.manual-block-content .block-form textarea{min-height:38px;padding:8px 10px}
+.manual-block-content .block-form .admin-date-range-toggle{min-height:40px}
+.manual-block-content .block-form .button{width:100%;padding:10px}
+.manual-block-content #adminCalendar{max-width:100%}
+#recordSort{min-width:0}
+@media(max-width:900px){.category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.booking-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.manual-block-details{grid-column:1/-1}.manual-block-content{left:0;right:auto;width:min(520px,calc(100vw - 32px))}}
+@media(max-width:560px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.category-card{padding:13px}.booking-toolbar{grid-template-columns:1fr}.manual-block-details{grid-column:auto}.manual-block-content{position:static;width:100%;max-height:none;box-shadow:none;border:0;border-top:1px solid var(--line)}.manual-block-details[open]{border-color:var(--gold)}}
