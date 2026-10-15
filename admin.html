@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Admin | The White Wood</title>
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css?v=earnings1">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="/">thewhitewood.my <span>ADMIN</span></a><button id="logoutBtn" class="button button-quiet hidden" type="button">Lock dashboard</button></header>
@@ -17,6 +17,7 @@
     <section id="dashboard" class="hidden">
       <div class="page-heading"><div><p class="eyebrow">BOOKINGS & AVAILABILITY</p><h1>Manage stays</h1><p class="muted">Changes are saved directly to the D1 database.</p></div><button id="refreshBtn" class="button button-light" type="button">Refresh data</button></div>
       <p id="globalMessage" class="message" role="status"></p>
+      <nav class="tabs" aria-label="Admin sections"><button class="tab active" data-view="bookings" type="button">Bookings</button><button class="tab" data-view="earnings" type="button">Earnings</button></nav>
       <section id="bookingsTab" class="tab-panel">
         <div class="category-grid" id="categoryGrid" aria-label="Filter records by category">
           <button class="category-card active" type="button" data-category="booking"><span class="category-label">Booking</span><strong id="countBooking">0</strong><span class="category-hint">Reservations & other blocks</span></button>
@@ -24,10 +25,13 @@
           <button class="category-card" type="button" data-category="airbnb"><span class="category-label">Airbnb</span><strong id="countAirbnb">0</strong><span class="category-hint">Airbnb & Agoda stays</span></button>
           <button class="category-card" type="button" data-category="maintenance"><span class="category-label">Maintenance</span><strong id="countMaintenance">0</strong><span class="category-hint">Maintenance blocks</span></button>
           <button class="category-card" type="button" data-category="cancelled"><span class="category-label">Cancelled</span><strong id="countCancelled">0</strong><span class="category-hint">Cancelled reservations</span></button>
+          <button class="category-card" type="button" data-category="completed"><span class="category-label">Completed</span><strong id="countCompleted">0</strong><span class="category-hint">Completed stays</span></button>
         </div>
         <div class="toolbar booking-toolbar">
           <label>Listing<select id="bookingListing"><option value="">Both listings</option><option value="white-wood">The White Wood Homestay</option><option value="rumah-puteh">Rumah Puteh</option></select></label>
           <label>Status<select id="bookingStatus"><option value="">All statuses</option><option>pending</option><option>confirmed</option><option>cancelled</option><option>rejected</option><option>completed</option></select></label>
+          <label>Source<select id="recordSource"><option value="">All sources</option><option value="website">Website</option><option value="whatsapp">WhatsApp</option><option value="airbnb">Airbnb / Agoda</option><option value="maintenance">Maintenance</option><option value="private">Private / Other</option></select></label>
+          <label>Month / year<select id="recordMonth"><option value="">All months</option></select></label>
           <label>Sort by<select id="recordSort"><option value="newest">Newest first</option><option value="month-desc">Month (latest first)</option><option value="month-asc">Month (oldest first)</option></select></label>
           <details class="manual-block-details" id="manualBlockDetails">
             <summary><span><strong>＋ Manual block</strong><small>Block dates / add external stay</small></span></summary>
@@ -51,7 +55,22 @@
         </div>
         <div class="section-heading"><h2 id="recordsHeading">Booking</h2><span id="recordsCount" class="muted">Loading records…</span></div>
         <div id="bookingsList" class="cards"><p class="muted">Loading bookings…</p></div>
-
+      </section>
+      <section id="earningsTab" class="tab-panel hidden">
+        <div class="section-heading"><div><h2>Earnings overview</h2><p class="muted">Completed Revenue and Actual Paid are tracked separately.</p></div></div>
+        <div class="earnings-toolbar toolbar">
+          <label>Period<select id="earningsPeriod"><option value="week">Week</option><option value="month" selected>Month</option><option value="year">Year</option></select></label>
+          <label>Source<select id="earningsSource"><option value="">All sources</option><option value="website">Website</option><option value="whatsapp">WhatsApp</option><option value="airbnb">Airbnb / Agoda</option></select></label>
+          <label>Year<select id="earningsYear"></select></label>
+        </div>
+        <div class="earnings-summary">
+          <article class="earnings-stat"><span>Completed Revenue</span><strong id="completedRevenue">RM 0.00</strong><small>Booking value for completed stays</small></article>
+          <article class="earnings-stat"><span>Actual Paid</span><strong id="actualPaid">RM 0.00</strong><small>Payments manually recorded as received</small></article>
+          <article class="earnings-stat"><span>Outstanding on completed stays</span><strong id="outstandingRevenue">RM 0.00</strong><small>Completed Revenue minus Actual Paid</small></article>
+        </div>
+        <div class="panel earnings-chart-panel"><div class="section-heading"><h2 id="earningsChartTitle">Monthly earnings</h2><span class="muted" id="earningsChartCaption"></span></div><div id="earningsChart" class="earnings-chart" aria-label="Earnings chart"></div></div>
+        <div class="section-heading"><h2>Record actual payments</h2><span class="muted">Enter total received to date for each booking.</span></div>
+        <div id="paymentBookings" class="cards"><p class="muted">Loading payments…</p></div>
       </section>
     </section>
   </main>
@@ -105,6 +124,6 @@
  sync();render();
 })();
   </script>
-  <script src="admin.js" defer></script>
+  <script src="admin.js?v=earnings1" defer></script>
 </body>
 </html>
