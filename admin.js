@@ -225,8 +225,13 @@
     if (status === 'pending' || status === 'confirmed') {
       actions.append(action('Cancel booking', () => updateBooking(b.id, 'cancelled'), 'danger'));
     }
-    if (status === 'confirmed') {
+    // Keep the completion action visible for every active booking, not only confirmed cards.
+    // This also covers records whose status casing/transition differs from the expected value.
+    if (!['completed', 'cancelled', 'rejected'].includes(status)) {
       actions.append(action('✓ Mark completed', () => updateBooking(b.id, 'completed'), 'complete-button'));
+    }
+    if (status === 'cancelled') {
+      actions.append(action('Delete cancelled booking', () => deleteCancelledBooking(b.id, b.reference || b.id), 'danger'));
     }
     const paid = paidTotal(b.id);
     if (paid > 0) {
@@ -269,6 +274,15 @@
     card.append(actions);
     host.append(card);
   }
+  async function deleteCancelledBooking(id, reference) {
+    if (!confirm(`Permanently delete cancelled booking ${reference}? This cannot be undone.`)) return;
+    try {
+      await api('/api/booking-delete', { method: 'DELETE', body: JSON.stringify({ id }) });
+      message($('#globalMessage'), 'Cancelled booking deleted.', 'success');
+      await refreshAll();
+    } catch(err) { message($('#globalMessage'), err.message, 'error'); }
+  }
+
   async function updateBooking(id, status) {
     if (!confirm(`Change booking status to ${status}?`)) return;
     try {
