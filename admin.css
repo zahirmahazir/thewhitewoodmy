@@ -250,12 +250,14 @@ html, body, body *, body *::before, body *::after { font-family: "Josefin Sans",
 @media(max-width:600px){.completed-record-list{width:100%;max-width:none}.completed-record-summary{min-height:0}.completed-modal-overlay{padding:10px;align-items:flex-end}.completed-modal{max-height:92vh;border-radius:14px 14px 8px 8px}.completed-modal-header{padding:15px 17px}.completed-modal-body{padding:17px}.completed-modal-footer{padding:12px 17px}}
 
 
-/* Fix: the shared .cards grid was placing Completed breadcrumbs and the record list in separate columns. */
-#bookingsList.cards.completed-archive-host{display:block!important;grid-template-columns:none!important;align-items:initial!important}
-#bookingsList.cards.completed-archive-host > .completed-breadcrumb{display:flex;width:100%;box-sizing:border-box;margin:0 0 16px}
-#bookingsList.cards.completed-archive-host > .completed-listing-grid,
-#bookingsList.cards.completed-archive-host > .completed-period-grid,
-#bookingsList.cards.completed-archive-host > .completed-record-list{clear:both;float:none;margin-left:0;margin-right:auto}
-#bookingsList.cards.completed-archive-host > .completed-listing-grid{width:min(100%,700px)}
-#bookingsList.cards.completed-archive-host > .completed-period-grid{width:min(100%,700px)}
-#bookingsList.cards.completed-archive-host > .completed-record-list{width:min(100%,540px);max-width:540px}
+/* Simplified front page: Manual block lives beside the Earnings tab; filters stay hidden. */
+.admin-front-filter-hidden{display:none!important}
+.booking-toolbar{display:none!important}
+.tabs{align-items:center;flex-wrap:wrap}
+.tabs .manual-block-tab-control{margin:0 0 0 4px;align-self:center;min-width:190px;border:1px solid var(--line);background:#fff}
+.tabs .manual-block-tab-control>summary{min-height:42px;padding:8px 12px}
+.tabs .manual-block-tab-control>summary strong{font-size:12px}
+.tabs .manual-block-tab-control>summary small{font-size:11px}
+.tabs .manual-block-tab-control[open]{border-color:var(--gold)}
+.tabs .manual-block-tab-control .manual-block-content{top:calc(100% + 6px);left:0;right:auto}
+@media(max-width:560px){.tabs .manual-block-tab-control{min-width:0;flex:1 1 100%;margin:6px 0 0}.tabs .manual-block-tab-control .manual-block-content{position:static;width:100%;max-height:none;box-shadow:none;border:0;border-top:1px solid var(--line)}}

@@ -55,6 +55,20 @@
   $('#logoutBtn').addEventListener('click', lock);
   $('#refreshBtn').addEventListener('click', refreshAll);
 
+  // Keep the front-page toolbar clean: move Manual block beside the main tabs.
+  const manualBlockControl = $('#manualBlockDetails');
+  const bookingToolbar = $('.booking-toolbar');
+  const mainTabs = $('.tabs');
+  const earningsTabButton = $('[data-view="earnings"]');
+  if (manualBlockControl && bookingToolbar && mainTabs && earningsTabButton) {
+    // Keep filter inputs in the DOM for existing rendering logic, but remove them from the visible front page.
+    [...bookingToolbar.children].forEach(child => {
+      if (child !== manualBlockControl) child.classList.add('admin-front-filter-hidden');
+    });
+    earningsTabButton.insertAdjacentElement('afterend', manualBlockControl);
+    manualBlockControl.classList.add('manual-block-tab-control');
+  }
+
   document.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
   document.querySelectorAll('[data-category]').forEach(btn => btn.addEventListener('click', () => {
     activeCategory = btn.dataset.category;
@@ -181,7 +195,6 @@
     $('#recordsHeading').textContent = titles[activeCategory] || 'Booking';
     $('#recordsCount').textContent = `${records.length} record${records.length === 1 ? '' : 's'}`;
     const host = $('#bookingsList');
-    host.classList.remove('completed-archive-host');
     host.innerHTML = '';
     if (!records.length) {
       const p = document.createElement('p');
@@ -220,7 +233,7 @@
     const b = document.createElement('button'); b.type = 'button'; b.className = 'small-button completed-back'; b.textContent = label; b.addEventListener('click', onClick); return b;
   }
   function renderCompletedHierarchy(records) {
-    const host = $('#bookingsList'); host.classList.add('completed-archive-host'); host.innerHTML = '';
+    const host = $('#bookingsList'); host.innerHTML = '';
     const available = records.filter(r => { const key = recordListingKey(r); return key === 'white-wood' || key === 'rumah-puteh' || key; });
     const selected = completedRecordsForPath(available);
     $('#recordsHeading').textContent = completedPath.listing ? `Completed · ${listingTitle(completedPath.listing)}` : 'Completed';
