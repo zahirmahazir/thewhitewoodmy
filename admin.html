@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Admin | The White Wood</title>
-  <link rel="stylesheet" href="admin.css?v=earnings1">
+  <link rel="stylesheet" href="admin.css?v=external-earnings-attachments">
 </head>
 <body>
   <header class="topbar"><a class="brand" href="/">thewhitewood.my <span>ADMIN</span></a><button id="logoutBtn" class="button button-quiet hidden" type="button">Lock dashboard</button></header>
@@ -46,7 +46,10 @@
                 <input id="adminEndDate" name="endDate" type="hidden">
                 <div id="adminCalendar" class="admin-calendar" aria-label="Choose block dates" hidden></div>
                 <label>Reason<select name="source" required><option value="airbnb">Airbnb</option><option value="agoda">Agoda</option><option value="whatsapp">WhatsApp</option><option value="private">Private booking</option><option value="maintenance">Maintenance</option><option value="admin">Other / Admin</option></select></label>
-                <label>Label<input name="label" maxlength="120" placeholder="e.g. guest name or external reservation"></label>
+                <label>Guest / reservation label<input name="label" maxlength="120" placeholder="e.g. guest name or external reservation"></label>
+                <label>Phone number<input name="guestPhone" type="tel" maxlength="40" placeholder="e.g. +60 12-345 6789"></label>
+                <label>Email<input name="guestEmail" type="email" maxlength="254" placeholder="guest@example.com"></label>
+                <label>Booking price (RM)<input name="totalAmount" type="number" min="0" step="0.01" placeholder="e.g. 440.00"></label>
                 <label>Notes<textarea name="notes" rows="2" maxlength="2000" placeholder="Optional notes"></textarea></label>
                 <button class="button" type="submit">Block dates</button><p id="blockMessage" class="message" role="status"></p>
               </form>

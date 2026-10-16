@@ -195,6 +195,44 @@
     b.addEventListener('click', fn);
     return b;
   }
+  function renderAttachmentTools(card, recordType, recordId) {
+    const wrap = document.createElement('section'); wrap.className = 'attachment-tools';
+    const title = document.createElement('strong'); title.textContent = 'Attachments';
+    const list = document.createElement('div'); list.className = 'attachment-list';
+    const form = document.createElement('form'); form.className = 'attachment-form';
+    const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*,application/pdf'; input.multiple = true; input.setAttribute('aria-label','Upload image or PDF reference');
+    const submit = document.createElement('button'); submit.type = 'submit'; submit.className = 'small-button'; submit.textContent = '＋ Attach image / PDF';
+    form.append(input,submit);
+    async function load(){
+      try {
+        const data = await api(`/api/attachments?recordType=${encodeURIComponent(recordType)}&recordId=${encodeURIComponent(recordId)}`);
+        list.innerHTML='';
+        (data.attachments||[]).forEach(a=>{
+          const row=document.createElement('div'); row.className='attachment-row';
+          const link=document.createElement('a'); link.href='#'; link.textContent=`📎 ${a.fileName}`; link.addEventListener('click',async ev=>{ev.preventDefault();try{const full=await api(`/api/attachments?recordType=${encodeURIComponent(recordType)}&recordId=${encodeURIComponent(recordId)}&attachmentId=${encodeURIComponent(a.id)}&include=content`);const blob=await (await fetch(full.attachment.dataUrl)).blob();const url=URL.createObjectURL(blob);const opener=document.createElement('a');opener.href=url;opener.target='_blank';opener.rel='noopener';opener.download=a.fileName;document.body.append(opener);opener.click();opener.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}catch(err){message($('#globalMessage'),err.message,'error');}});
+          const del=action('Remove',async()=>{if(!confirm(`Delete attachment ${a.fileName}?`))return;try{await api('/api/attachments',{method:'DELETE',body:JSON.stringify({id:a.id})});await load();}catch(err){message($('#globalMessage'),err.message,'error');}},'danger');
+          row.append(link,del);list.append(row);
+        });
+        if(!list.children.length){const empty=document.createElement('small');empty.className='muted';empty.textContent='No attachments yet.';list.append(empty);}
+      } catch(err){list.textContent='Unable to load attachments: '+err.message;}
+    }
+    form.addEventListener('submit',async e=>{
+      e.preventDefault(); const files=Array.from(input.files||[]); if(!files.length)return;
+      if(files.length>5){message($('#globalMessage'),'Attach up to 5 files at a time.','error');return;}
+      submit.disabled=true;
+      try {
+        for(const file of files){
+          if(!(file.type.startsWith('image/')||file.type==='application/pdf')) throw new Error('Only image and PDF files are allowed.');
+          if(file.size>1024*1024) throw new Error(`${file.name} is over 1 MB. Please use a smaller file.`);
+          const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('Could not read file.'));r.readAsDataURL(file);});
+          await api('/api/attachments',{method:'POST',body:JSON.stringify({recordType,recordId:String(recordId),fileName:file.name,mimeType:file.type,dataUrl})});
+        }
+        input.value=''; message($('#globalMessage'),'Attachment uploaded.','success'); await load();
+      }catch(err){message($('#globalMessage'),err.message,'error');}finally{submit.disabled=false;}
+    });
+    wrap.append(title,list,form);card.append(wrap);load();
+  }
+
   function renderBookingCard(host, b) {
     const card = document.createElement('article');
     card.className = 'item-card';
@@ -244,6 +282,7 @@
       card.append(paidLine);
     }
     if (actions.childElementCount) card.append(actions);
+    renderAttachmentTools(card, 'booking', b.id);
     host.append(card);
   }
   function renderBlockCard(host, b) {
@@ -256,7 +295,7 @@
     h.textContent = b.listingName || b.listing_name || 'Homestay';
     const meta = document.createElement('div');
     meta.className = 'meta';
-    meta.textContent = `${b.startDate || ''} → ${b.endDate || ''}\nReason: ${b.source || 'admin'}${b.label ? ' · '+b.label : ''}${b.notes ? '\n'+b.notes : ''}`;
+    meta.textContent = `${b.startDate || ''} → ${b.endDate || ''}\nReason: ${b.source || 'admin'}${b.label ? ' · '+b.label : ''}${b.guestPhone ? '\nPhone: '+b.guestPhone : ''}${b.guestEmail ? '\nEmail: '+b.guestEmail : ''}${b.totalAmount != null ? '\nBooking value: '+money(b.totalAmount) : ''}${b.notes ? '\n'+b.notes : ''}`;
     meta.style.whiteSpace = 'pre-line';
     left.append(h, meta);
     const status = String(b.status || 'confirmed').toLowerCase();
@@ -297,6 +336,7 @@
       }, 'danger'));
     }
     if (actions.childElementCount) card.append(actions);
+    renderAttachmentTools(card, 'block', b.id);
     host.append(card);
   }
   async function deleteCancelledBooking(id, reference) {
@@ -341,7 +381,7 @@
     const select = $('#earningsYear');
     if (!select) return;
     const years = new Set([String(new Date().getFullYear())]);
-    allBookings.forEach(b => { const d = String(b.checkout || b.checkin || '').slice(0,4); if (/^\d{4}$/.test(d)) years.add(d); });
+    [...allBookings,...allBlocks].forEach(b => { const d = String(b.checkout || b.endDate || b.checkin || b.startDate || '').slice(0,4); if (/^\d{4}$/.test(d)) years.add(d); });
     allPayments.forEach(p => { const d = String(p.paidAt || p.paid_at || '').slice(0,4); if (/^\d{4}$/.test(d)) years.add(d); });
     const current = select.value || String(new Date().getFullYear());
     select.innerHTML = [...years].sort((a,b)=>Number(b)-Number(a)).map(y=>`<option value="${y}">${y}</option>`).join('');
@@ -369,10 +409,11 @@
     const period = $('#earningsPeriod').value;
     const source = $('#earningsSource').value;
     const year = Number($('#earningsYear').value || new Date().getFullYear());
-    let completed = allBookings.filter(b => String(b.status).toLowerCase() === 'completed');
+    const earningsRecords = [...allBookings, ...allBlocks.filter(b => ['whatsapp','airbnb','agoda','private'].includes(sourceOf(b))).map(b => ({...b, _externalBlock:true, checkin:b.startDate, checkout:b.endDate, totalAmount:b.totalAmount, guestName:b.label || 'External stay'}))];
+    let completed = earningsRecords.filter(b => String(b.status).toLowerCase() === 'completed');
     if (source) completed = completed.filter(b => bookingSource(b) === source);
     const payments = allPayments.filter(p => {
-      const b = allBookings.find(x => String(x.id) === String(p.bookingId || p.booking_id));
+      const b = earningsRecords.find(x => String(x.id) === String(p.bookingId || p.booking_id));
       return !source || (b && bookingSource(b) === source);
     });
     const bounds = periodBounds();
@@ -420,7 +461,8 @@
   }
   function renderPaymentBookings(source) {
     const host=$('#paymentBookings');host.innerHTML='';
-    const list=allBookings.filter(b=>!['cancelled','rejected'].includes(String(b.status).toLowerCase())).filter(b=>!source||bookingSource(b)===source).sort((a,b)=>String(b.checkin||'').localeCompare(String(a.checkin||'')));
+    const external=allBlocks.filter(x=>['whatsapp','airbnb','agoda','private'].includes(sourceOf(x))).map(x=>({...x,_externalBlock:true,checkin:x.startDate,checkout:x.endDate,totalAmount:x.totalAmount,guestName:x.label||'External stay',listingName:x.listingName}));
+    const list=[...allBookings,...external].filter(b=>!['cancelled','rejected'].includes(String(b.status).toLowerCase())).filter(b=>!source||bookingSource(b)===source).sort((a,b)=>String(b.checkin||'').localeCompare(String(a.checkin||'')));
     if(!list.length){host.innerHTML='<p class="muted">No bookings available for payment records.</p>';return;}
     list.forEach(b=>{
       const paidRecords=paymentsFor(b.id);const paid=paidTotal(b.id);const card=document.createElement('article');card.className='item-card';
@@ -428,13 +470,14 @@
       const meta=document.createElement('p');meta.className='meta';meta.textContent=`${b.guestName||b.guest_name||'Guest'} · ${b.checkin||''} → ${b.checkout||''}\nSource: ${b.source||'website'} · Booking value: ${money(amountFor(b))}\nTotal actually paid: ${money(paid)} · Balance: ${money(Math.max(0,amountFor(b)-paid))}`;meta.style.whiteSpace='pre-line';
       const history=document.createElement('div');history.className='payment-history';
       if(paidRecords.length){const historyTitle=document.createElement('strong');historyTitle.textContent='Payment history';history.append(historyTitle);paidRecords.slice().sort((a,b)=>String(b.paidAt||b.paid_at||'').localeCompare(String(a.paidAt||a.paid_at||''))).forEach(p=>{const line=document.createElement('p');line.className='meta';line.textContent=`${p.paidAt||p.paid_at} · ${money(p.amountPaid ?? p.amount_paid)}${p.note?' · '+p.note:''}`;history.append(line);});}
+      const completeBtn = (amountFor(b)>0 && paid>=amountFor(b) && String(b.status).toLowerCase()!=='completed') ? action('✓ Mark completed',()=>b._externalBlock?updateBlock(b.id,'completed'):updateBooking(b.id,'completed'),'complete-button') : null;
       const form=document.createElement('form');form.className='payment-form';
       const amountLabel=document.createElement('label');amountLabel.textContent='New payment received (RM)';const amount=document.createElement('input');amount.type='number';amount.min='0.01';amount.step='0.01';amount.required=true;amount.placeholder='e.g. 100.00';amountLabel.append(amount);
       const dateLabel=document.createElement('label');dateLabel.textContent='Payment date';const date=document.createElement('input');date.type='date';date.required=true;date.value=new Date().toISOString().slice(0,10);dateLabel.append(date);
       const noteLabel=document.createElement('label');noteLabel.textContent='Payment note (optional)';const note=document.createElement('input');note.type='text';note.maxLength=250;note.placeholder='e.g. deposit / balance';noteLabel.append(note);
       const save=document.createElement('button');save.type='submit';save.className='small-button';save.textContent='＋ Add payment';form.append(amountLabel,dateLabel,noteLabel,save);
       form.addEventListener('submit',async e=>{e.preventDefault();save.disabled=true;try{await api('/api/earnings',{method:'POST',body:JSON.stringify({bookingId:String(b.id),amountPaid:Number(amount.value),paidAt:date.value,note:note.value})});message($('#globalMessage'),'Payment recorded.','success');const result=await api('/api/earnings');allPayments=result.payments||[];renderRecords();renderEarnings();}catch(err){message($('#globalMessage'),err.message,'error');}finally{save.disabled=false;}});
-      card.append(title,meta);if(paidRecords.length)card.append(history);card.append(form);host.append(card);
+      card.append(title,meta);if(paidRecords.length)card.append(history);if(completeBtn)card.append(completeBtn);card.append(form);renderAttachmentTools(card,b._externalBlock?'block':'booking',b.id);host.append(card);
     });
   }
 
