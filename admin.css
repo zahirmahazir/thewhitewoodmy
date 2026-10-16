@@ -193,12 +193,12 @@ html, body, body *, body *::before, body *::after { font-family: "Josefin Sans",
 /* Completed archive: listing > year > month > vertical record cards */
 .completed-breadcrumb{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;align-items:center}
 .completed-back{font-family:inherit}
-.completed-listing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:12px 0 24px}
-.completed-listing-tile{display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:10px;padding:0 0 14px;background:#fff;border:1px solid var(--line);color:var(--ink);font:inherit;cursor:pointer;min-width:0}
-.completed-listing-tile img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#f5f1e8;border-bottom:1px solid var(--line)}
-.completed-listing-tile strong,.completed-listing-tile span{margin-left:14px;margin-right:14px}
-.completed-listing-tile strong{font-size:18px}
-.completed-listing-tile span{font-size:13px;color:var(--muted)}
+.completed-listing-grid{display:grid;grid-template-columns:repeat(2,minmax(190px,260px));gap:12px;margin:12px 0 24px;align-items:stretch}
+.completed-listing-tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;gap:5px;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:4px;color:var(--ink);font:inherit;cursor:pointer;min-width:0;min-height:68px;box-shadow:none}
+.completed-listing-tile:hover{border-color:var(--gold,#b88b3b);background:var(--soft,#faf8f3)}
+.completed-listing-tile strong{font-size:17px;font-weight:700;line-height:1.3}
+.completed-listing-tile span{font-size:12px;color:var(--muted)}
+@media(max-width:560px){.completed-listing-grid{grid-template-columns:minmax(0,1fr)}}
 .completed-period-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 24px}
 .completed-period-tile{display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:17px;background:#fff;border:1px solid var(--line);font:inherit;color:var(--ink);cursor:pointer;min-height:82px}
 .completed-period-tile strong{font-size:19px}.completed-period-tile span{font-size:13px;color:var(--muted)}

@@ -262,15 +262,14 @@
     if (!completedPath.listing) {
       const grid = document.createElement('div'); grid.className='completed-listing-grid';
       [
-        {key:'white-wood', title:'The White Wood', image:'/images/completed-white-wood-placeholder.svg'},
-        {key:'rumah-puteh', title:'Rumah Puteh', image:'/images/completed-rumah-puteh-placeholder.svg'}
+        {key:'white-wood', title:'The White Wood'},
+        {key:'rumah-puteh', title:'Rumah Puteh'}
       ].forEach(item => {
         const count=available.filter(r=>recordListingKey(r)===item.key).length;
         const card=document.createElement('button'); card.type='button'; card.className='completed-listing-tile';
-        const img=document.createElement('img'); img.src=item.image; img.alt=`${item.title} mockup`; 
         const title=document.createElement('strong'); title.textContent=item.title;
         const countText=document.createElement('span'); countText.textContent=`${count} completed record${count===1?'':'s'}`;
-        card.append(img,title,countText); card.addEventListener('click',()=>{completedPath={listing:item.key,year:'',month:''};expandedCompletedKey='';renderRecords();}); grid.append(card);
+        card.append(title,countText); card.addEventListener('click',()=>{completedPath={listing:item.key,year:'',month:''};expandedCompletedKey='';renderRecords();}); grid.append(card);
       }); host.append(grid); return;
     }
     if (!completedPath.year) {
