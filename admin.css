@@ -280,3 +280,22 @@ html, body, body *, body *::before, body *::after { font-family: "Josefin Sans",
 #bookingsList.completed-archive-host > .completed-listing-grid,#bookingsList.completed-archive-host > .completed-period-grid,#bookingsList.completed-archive-host > .completed-record-list{display:flex;flex-direction:column;float:none!important;clear:both!important;margin-left:0!important;margin-right:auto!important}
 #bookingsList.completed-archive-host > .completed-listing-grid,#bookingsList.completed-archive-host > .completed-period-grid{width:min(100%,700px)!important}
 #bookingsList.completed-archive-host > .completed-record-list{width:min(100%,540px)!important;max-width:540px!important}
+
+/* Manual block opens in the same dimmed modal style as Completed > View details. */
+.manual-block-modal-overlay{position:fixed;inset:0;z-index:10001;background:rgba(20,18,16,.66);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;overflow-y:auto}
+.manual-block-modal-overlay[hidden]{display:none!important}
+.manual-block-modal{width:min(100%,620px);max-height:min(90vh,900px);display:flex;flex-direction:column;background:#fff;border:1px solid var(--line,#e6ded2);border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden;color:var(--ink,#222)}
+.manual-block-modal-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;border-bottom:1px solid var(--line,#e6ded2);flex-shrink:0}
+.manual-block-modal-header h2{margin:0;font-size:1.25rem;line-height:1.3}
+.manual-block-modal-close{border:0;background:transparent;color:var(--ink,#222);font:inherit;font-size:30px;line-height:1;cursor:pointer;padding:0 3px}
+.manual-block-modal-body{padding:18px 24px;overflow:auto}
+.manual-block-modal-body .manual-block-content{position:static;inset:auto;width:100%;max-height:none;overflow:visible;background:transparent;border:0;box-shadow:none;z-index:auto}
+.manual-block-modal-body .block-form{max-width:none;margin:0;border:0;padding:0;background:transparent}
+.manual-block-modal-body .block-form h2{display:none}
+.manual-block-modal-body .block-form label{margin-bottom:12px}
+.manual-block-modal-body .block-form input,.manual-block-modal-body .block-form select,.manual-block-modal-body .block-form textarea{min-height:40px;padding:9px 10px}
+.manual-block-modal-body .block-form .button{width:100%;padding:11px}
+.manual-block-modal-body .block-form #blockMessage{margin-bottom:0}
+.manual-block-modal-footer{display:flex;justify-content:flex-end;padding:12px 24px;border-top:1px solid var(--line,#e6ded2);flex-shrink:0}
+body.manual-block-modal-open{overflow:hidden}
+@media(max-width:600px){.manual-block-modal-overlay{padding:10px;align-items:flex-end}.manual-block-modal{max-height:92vh;border-radius:14px 14px 8px 8px}.manual-block-modal-header{padding:15px 17px}.manual-block-modal-body{padding:16px 17px}.manual-block-modal-footer{padding:12px 17px}}

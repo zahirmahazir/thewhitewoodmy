@@ -60,6 +60,23 @@
   const bookingToolbar = $('.booking-toolbar');
   const mainTabs = $('.tabs');
   const earningsTabButton = $('[data-view="earnings"]');
+  let manualBlockModalOverlay = null;
+  function closeManualBlockModal() {
+    if (!manualBlockModalOverlay) return;
+    manualBlockModalOverlay.hidden = true;
+    document.body.classList.remove('manual-block-modal-open');
+    const summary = manualBlockControl && manualBlockControl.querySelector('summary');
+    if (summary) summary.setAttribute('aria-expanded', 'false');
+  }
+  function openManualBlockModal() {
+    if (!manualBlockModalOverlay) return;
+    manualBlockModalOverlay.hidden = false;
+    document.body.classList.add('manual-block-modal-open');
+    const summary = manualBlockControl && manualBlockControl.querySelector('summary');
+    if (summary) summary.setAttribute('aria-expanded', 'true');
+    const firstField = manualBlockModalOverlay.querySelector('select, input:not([type="hidden"]), textarea, button');
+    if (firstField) firstField.focus({ preventScroll: true });
+  }
   if (manualBlockControl && bookingToolbar && mainTabs && earningsTabButton) {
     // Keep filter inputs in the DOM for existing rendering logic, but remove them from the visible front page.
     [...bookingToolbar.children].forEach(child => {
@@ -67,6 +84,34 @@
     });
     earningsTabButton.insertAdjacentElement('afterend', manualBlockControl);
     manualBlockControl.classList.add('manual-block-tab-control');
+
+    // Use the same dimmed-backdrop/modal interaction as View details.
+    const summary = manualBlockControl.querySelector('summary');
+    const content = manualBlockControl.querySelector('.manual-block-content');
+    if (summary && content) {
+      manualBlockModalOverlay = document.createElement('div');
+      manualBlockModalOverlay.className = 'manual-block-modal-overlay';
+      manualBlockModalOverlay.hidden = true;
+      manualBlockModalOverlay.setAttribute('role', 'presentation');
+      manualBlockModalOverlay.innerHTML = `
+        <section class="manual-block-modal" role="dialog" aria-modal="true" aria-labelledby="manualBlockModalTitle">
+          <header class="manual-block-modal-header">
+            <h2 id="manualBlockModalTitle">Create manual block</h2>
+            <button type="button" class="manual-block-modal-close" aria-label="Close">×</button>
+          </header>
+          <div class="manual-block-modal-body"></div>
+          <footer class="manual-block-modal-footer"><button type="button" class="button button-light manual-block-modal-close-footer">Close</button></footer>
+        </section>`;
+      document.body.append(manualBlockModalOverlay);
+      manualBlockModalOverlay.querySelector('.manual-block-modal-body').append(content);
+      // Avoid the old native details dropdown; clicking the summary now opens the modal.
+      summary.setAttribute('aria-haspopup', 'dialog');
+      summary.setAttribute('aria-expanded', 'false');
+      summary.addEventListener('click', event => { event.preventDefault(); openManualBlockModal(); });
+      manualBlockModalOverlay.querySelectorAll('.manual-block-modal-close, .manual-block-modal-close-footer').forEach(button => button.addEventListener('click', closeManualBlockModal));
+      manualBlockModalOverlay.addEventListener('click', event => { if (event.target === manualBlockModalOverlay) closeManualBlockModal(); });
+      document.addEventListener('keydown', event => { if (event.key === 'Escape' && !manualBlockModalOverlay.hidden) closeManualBlockModal(); });
+    }
   }
 
   document.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
@@ -684,6 +729,7 @@
       message(msg, 'Dates blocked successfully.', 'success');
       form.reset();
       $('#manualBlockDetails').open = false;
+      closeManualBlockModal();
       await refreshAll();
     } catch(err) {
       message(msg, err.message, 'error');
