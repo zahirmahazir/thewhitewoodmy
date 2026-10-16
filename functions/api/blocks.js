@@ -5,13 +5,13 @@ const SOURCES = new Set(['airbnb', 'agoda', 'whatsapp', 'private', 'maintenance'
 export async function onRequestGet({ request, env }) {
   const auth = authorize(request, env); if (auth) return auth;
   if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
-  try { await ensureStatusColumn(env.DB); } catch { return json({ error: 'Unable to prepare date-block status storage.' }, 500); }
+  try { await ensureBlockColumns(env.DB); } catch { return json({ error: 'Unable to prepare date-block storage.' }, 500); }
   const url = new URL(request.url);
   const listingId = url.searchParams.get('listingId') || '';
   try {
     const query = listingId
-      ? env.DB.prepare(`SELECT d.id, d.listing_id AS listingId, l.name AS listingName, d.start_date AS startDate, d.end_date AS endDate, d.source, d.label, d.notes, d.status, d.created_at AS createdAt FROM date_blocks d JOIN listings l ON l.id=d.listing_id WHERE d.listing_id=? ORDER BY d.start_date`).bind(listingId)
-      : env.DB.prepare(`SELECT d.id, d.listing_id AS listingId, l.name AS listingName, d.start_date AS startDate, d.end_date AS endDate, d.source, d.label, d.notes, d.status, d.created_at AS createdAt FROM date_blocks d JOIN listings l ON l.id=d.listing_id ORDER BY d.start_date`);
+      ? env.DB.prepare(`SELECT d.id, d.listing_id AS listingId, l.name AS listingName, d.start_date AS startDate, d.end_date AS endDate, d.source, d.label, d.notes, d.status, d.guest_phone AS guestPhone, d.guest_email AS guestEmail, d.total_amount AS totalAmount, d.created_at AS createdAt FROM date_blocks d JOIN listings l ON l.id=d.listing_id WHERE d.listing_id=? ORDER BY d.start_date`).bind(listingId)
+      : env.DB.prepare(`SELECT d.id, d.listing_id AS listingId, l.name AS listingName, d.start_date AS startDate, d.end_date AS endDate, d.source, d.label, d.notes, d.status, d.guest_phone AS guestPhone, d.guest_email AS guestEmail, d.total_amount AS totalAmount, d.created_at AS createdAt FROM date_blocks d JOIN listings l ON l.id=d.listing_id ORDER BY d.start_date`);
     const result = await query.all();
     return json({ success: true, blocks: result.results || [] });
   } catch { return json({ error: 'Unable to load date blocks.' }, 500); }
@@ -20,7 +20,7 @@ export async function onRequestGet({ request, env }) {
 export async function onRequestPost({ request, env }) {
   const auth = authorize(request, env); if (auth) return auth;
   if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
-  try { await ensureStatusColumn(env.DB); } catch { return json({ error: 'Unable to prepare date-block status storage.' }, 500); }
+  try { await ensureBlockColumns(env.DB); } catch { return json({ error: 'Unable to prepare date-block storage.' }, 500); }
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Request body must be valid JSON.' }, 400); }
   const listingId = String(body.listingId || '').trim();
@@ -29,26 +29,31 @@ export async function onRequestPost({ request, env }) {
   const source = SOURCES.has(body.source) ? body.source : '';
   const label = clean(body.label, 120) || null;
   const notes = clean(body.notes, 2000) || null;
+  const guestPhone = clean(body.guestPhone, 40) || null;
+  const guestEmail = clean(body.guestEmail, 254) || null;
+  const totalAmount = body.totalAmount === '' || body.totalAmount == null ? null : Number(body.totalAmount);
+  if (guestEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) return json({ error: 'Enter a valid guest email.' }, 400);
+  if (totalAmount !== null && (!Number.isFinite(totalAmount) || totalAmount < 0)) return json({ error: 'Booking price must be zero or more.' }, 400);
   if (!listingId || !validDate(startDate) || !validDate(endDate) || endDate <= startDate || !source) return json({ error: 'Provide listingId, valid startDate/endDate, and a supported source.' }, 400);
   try {
     const listing = await env.DB.prepare('SELECT id FROM listings WHERE id = ? AND is_active = 1').bind(listingId).first();
     if (!listing) return json({ error: 'Listing not found.' }, 404);
     const id = crypto.randomUUID();
     const result = await env.DB.prepare(`
-      INSERT INTO date_blocks (id, listing_id, start_date, end_date, source, label, notes, status)
-      SELECT ?, ?, ?, ?, ?, ?, ?, ?
+      INSERT INTO date_blocks (id, listing_id, start_date, end_date, source, label, notes, status, guest_phone, guest_email, total_amount)
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       WHERE NOT EXISTS (SELECT 1 FROM bookings b WHERE b.listing_id = ? AND b.status IN ('pending', 'confirmed') AND b.checkin < ? AND b.checkout > ?)
       AND NOT EXISTS (SELECT 1 FROM date_blocks d WHERE d.listing_id = ? AND d.status IN ('pending', 'confirmed') AND d.start_date < ? AND d.end_date > ?)
-    `).bind(id, listingId, startDate, endDate, source, label, notes, (source === 'maintenance' || source === 'admin') ? 'confirmed' : 'pending', listingId, endDate, startDate, listingId, endDate, startDate).run();
+    `).bind(id, listingId, startDate, endDate, source, label, notes, (source === 'maintenance' || source === 'admin') ? 'confirmed' : 'pending', guestPhone, guestEmail, totalAmount, listingId, endDate, startDate, listingId, endDate, startDate).run();
     if (!result.success || result.meta?.changes !== 1) return json({ error: 'Not available: these dates overlap an existing booking or block.' }, 409);
-    return json({ success: true, id, listingId, startDate, endDate, source }, 201);
+    return json({ success: true, id, listingId, startDate, endDate, source, guestPhone, guestEmail, totalAmount }, 201);
   } catch { return json({ error: 'Unable to create date block.' }, 500); }
 }
 
 export async function onRequestPatch({ request, env }) {
   const auth = authorize(request, env); if (auth) return auth;
   if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
-  try { await ensureStatusColumn(env.DB); } catch { return json({ error: 'Unable to prepare date-block status storage.' }, 500); }
+  try { await ensureBlockColumns(env.DB); } catch { return json({ error: 'Unable to prepare date-block storage.' }, 500); }
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Request body must be valid JSON.' }, 400); }
   const id = clean(body.id, 80);
@@ -72,7 +77,7 @@ export async function onRequestPatch({ request, env }) {
 export async function onRequestDelete({ request, env }) {
   const auth = authorize(request, env); if (auth) return auth;
   if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
-  try { await ensureStatusColumn(env.DB); } catch { return json({ error: 'Unable to prepare date-block status storage.' }, 500); }
+  try { await ensureBlockColumns(env.DB); } catch { return json({ error: 'Unable to prepare date-block storage.' }, 500); }
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Request body must be valid JSON.' }, 400); }
   const id = clean(body.id, 80);
@@ -93,9 +98,11 @@ function clean(value, max) { return String(value ?? '').trim().slice(0, max); }
 function validDate(value) { if (!DATE_RE.test(value)) return false; const d = new Date(`${value}T00:00:00Z`); return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value; }
 function json(body, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } }); }
 
-async function ensureStatusColumn(db) {
+async function ensureBlockColumns(db) {
   const columns = await db.prepare('PRAGMA table_info(date_blocks)').all();
-  if (!(columns.results || []).some(column => column.name === 'status')) {
-    await db.prepare("ALTER TABLE date_blocks ADD COLUMN status TEXT NOT NULL DEFAULT 'confirmed'").run();
-  }
+  const names = new Set((columns.results || []).map(c => c.name));
+  if (!names.has('status')) await db.prepare("ALTER TABLE date_blocks ADD COLUMN status TEXT NOT NULL DEFAULT 'confirmed'").run();
+  if (!names.has('guest_phone')) await db.prepare('ALTER TABLE date_blocks ADD COLUMN guest_phone TEXT').run();
+  if (!names.has('guest_email')) await db.prepare('ALTER TABLE date_blocks ADD COLUMN guest_email TEXT').run();
+  if (!names.has('total_amount')) await db.prepare('ALTER TABLE date_blocks ADD COLUMN total_amount REAL').run();
 }
