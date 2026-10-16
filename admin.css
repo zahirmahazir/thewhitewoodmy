@@ -272,3 +272,11 @@ html, body, body *, body *::before, body *::after { font-family: "Josefin Sans",
 #bookingsList.cards.completed-archive-host > .completed-listing-grid{width:min(100%,700px)}
 #bookingsList.cards.completed-archive-host > .completed-period-grid{width:min(100%,700px)}
 #bookingsList.cards.completed-archive-host > .completed-record-list{width:min(100%,540px);max-width:540px}
+
+
+/* V2 hardening: Completed archive owns a full-width block container, never the generic .cards grid. */
+#bookingsList.completed-archive-host{display:block!important;grid-template-columns:none!important;grid-column:1 / -1!important;align-items:initial!important;width:100%!important;max-width:none!important;justify-self:stretch!important}
+#bookingsList.completed-archive-host > .completed-breadcrumb{display:flex!important;position:static!important;float:none!important;clear:both!important;width:100%!important;margin:0 0 16px!important}
+#bookingsList.completed-archive-host > .completed-listing-grid,#bookingsList.completed-archive-host > .completed-period-grid,#bookingsList.completed-archive-host > .completed-record-list{display:flex;flex-direction:column;float:none!important;clear:both!important;margin-left:0!important;margin-right:auto!important}
+#bookingsList.completed-archive-host > .completed-listing-grid,#bookingsList.completed-archive-host > .completed-period-grid{width:min(100%,700px)!important}
+#bookingsList.completed-archive-host > .completed-record-list{width:min(100%,540px)!important;max-width:540px!important}

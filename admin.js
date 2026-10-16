@@ -196,6 +196,11 @@
     $('#recordsCount').textContent = `${records.length} record${records.length === 1 ? '' : 's'}`;
     const host = $('#bookingsList');
     host.classList.remove('completed-archive-host');
+    host.classList.add('cards');
+    host.style.display = '';
+    host.style.gridTemplateColumns = '';
+    host.style.width = '';
+    host.style.maxWidth = '';
     host.innerHTML = '';
     if (!records.length) {
       const p = document.createElement('p');
@@ -234,7 +239,16 @@
     const b = document.createElement('button'); b.type = 'button'; b.className = 'small-button completed-back'; b.textContent = label; b.addEventListener('click', onClick); return b;
   }
   function renderCompletedHierarchy(records) {
-    const host = $('#bookingsList'); host.classList.add('completed-archive-host'); host.innerHTML = '';
+    const host = $('#bookingsList');
+    // Force Completed archive out of the generic two-column .cards grid.
+    // Inline styles are intentional: they remain reliable if cached CSS overrides are present.
+    host.classList.remove('cards');
+    host.classList.add('completed-archive-host');
+    host.style.display = 'block';
+    host.style.gridTemplateColumns = 'none';
+    host.style.width = '100%';
+    host.style.maxWidth = 'none';
+    host.innerHTML = '';
     const available = records.filter(r => { const key = recordListingKey(r); return key === 'white-wood' || key === 'rumah-puteh' || key; });
     const selected = completedRecordsForPath(available);
     $('#recordsHeading').textContent = completedPath.listing ? `Completed · ${listingTitle(completedPath.listing)}` : 'Completed';
