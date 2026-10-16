@@ -8,6 +8,8 @@
   let allPayments = [];
   let activeCategory = 'booking';
   let activeView = 'bookings';
+  let completedPath = { listing: '', year: '', month: '' };
+  let expandedCompletedKey = '';
 
   const headers = () => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
   function message(el, text, kind='') {
@@ -164,6 +166,11 @@
     if (status) records = records.filter(r => r.kind === 'booking' && String(r.data.status || '').toLowerCase() === status);
     if (selectedSource) records = records.filter(r => { const src=sourceOf(r.data); if(selectedSource==='airbnb') return src.includes('airbnb')||src.includes('agoda'); if(selectedSource==='private') return !src.includes('website')&&!src.includes('whatsapp')&&!src.includes('airbnb')&&!src.includes('agoda')&&!src.includes('maintenance'); return src.includes(selectedSource); });
     if (selectedMonth) records = records.filter(r => (r.date || '').slice(0,7) === selectedMonth);
+    if (activeCategory === 'completed') {
+      const completedRecords = allRecords().filter(r => r.category === 'completed');
+      renderCompletedHierarchy(completedRecords);
+      return;
+    }
     records.sort((a, b) => {
       const da = a.date || '', db = b.date || '';
       if (sort === 'month-asc') return da.slice(0, 7).localeCompare(db.slice(0, 7)) || da.localeCompare(db);
@@ -187,6 +194,88 @@
       else renderBlockCard(host, record.data);
     });
   }
+  function recordListingKey(record) {
+    const d = record.data || {};
+    const raw = String(d.listingId || d.listing_id || '').toLowerCase();
+    const name = String(d.listingName || d.listing_name || '').toLowerCase();
+    if (raw.includes('rumah-puteh') || raw.includes('rumah_puteh') || name.includes('rumah puteh')) return 'rumah-puteh';
+    if (raw.includes('white-wood') || raw.includes('white_wood') || name.includes('white wood')) return 'white-wood';
+    return raw || (name ? name.replace(/[^a-z0-9]+/g, '-') : 'white-wood');
+  }
+  function recordDate(record) {
+    const d = record.data || {};
+    return String(record.kind === 'block' ? (d.startDate || d.start_date || '') : (d.checkin || d.check_in || d.createdAt || d.created_at || '')).slice(0,10);
+  }
+  function completedRecordsForPath(records) {
+    return records.filter(r => !completedPath.listing || recordListingKey(r) === completedPath.listing)
+      .filter(r => !completedPath.year || recordDate(r).slice(0,4) === completedPath.year)
+      .filter(r => !completedPath.month || recordDate(r).slice(0,7) === completedPath.month)
+      .sort((a,b) => recordDate(b).localeCompare(recordDate(a)));
+  }
+  function listingTitle(key) {
+    return key === 'rumah-puteh' ? 'Rumah Puteh' : key === 'white-wood' ? 'The White Wood Homestay' : key.replace(/-/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+  }
+  function navButton(label, onClick) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'small-button completed-back'; b.textContent = label; b.addEventListener('click', onClick); return b;
+  }
+  function renderCompletedHierarchy(records) {
+    const host = $('#bookingsList'); host.innerHTML = '';
+    const available = records.filter(r => { const key = recordListingKey(r); return key === 'white-wood' || key === 'rumah-puteh' || key; });
+    const selected = completedRecordsForPath(available);
+    $('#recordsHeading').textContent = completedPath.listing ? `Completed · ${listingTitle(completedPath.listing)}` : 'Completed';
+    $('#recordsCount').textContent = `${selected.length} record${selected.length === 1 ? '' : 's'}`;
+    const nav = document.createElement('div'); nav.className = 'completed-breadcrumb';
+    nav.append(navButton('Completed', () => { completedPath = {listing:'',year:'',month:''}; expandedCompletedKey=''; renderRecords(); }));
+    if (completedPath.listing) nav.append(navButton(listingTitle(completedPath.listing), () => { completedPath.year=''; completedPath.month=''; expandedCompletedKey=''; renderRecords(); }));
+    if (completedPath.year) nav.append(navButton(completedPath.year, () => { completedPath.month=''; expandedCompletedKey=''; renderRecords(); }));
+    if (completedPath.month) nav.append(navButton(new Date(Number(completedPath.month.slice(0,4)), Number(completedPath.month.slice(5,7))-1, 1).toLocaleDateString('en-GB',{month:'long',year:'numeric'}), () => { completedPath.month=''; expandedCompletedKey=''; renderRecords(); }));
+    if (completedPath.listing || completedPath.year || completedPath.month) host.append(nav);
+    if (!completedPath.listing) {
+      const grid = document.createElement('div'); grid.className='completed-listing-grid';
+      [
+        {key:'white-wood', title:'The White Wood', image:'/images/completed-white-wood-placeholder.svg'},
+        {key:'rumah-puteh', title:'Rumah Puteh', image:'/images/completed-rumah-puteh-placeholder.svg'}
+      ].forEach(item => {
+        const count=available.filter(r=>recordListingKey(r)===item.key).length;
+        const card=document.createElement('button'); card.type='button'; card.className='completed-listing-tile';
+        const img=document.createElement('img'); img.src=item.image; img.alt=`${item.title} mockup`; 
+        const title=document.createElement('strong'); title.textContent=item.title;
+        const countText=document.createElement('span'); countText.textContent=`${count} completed record${count===1?'':'s'}`;
+        card.append(img,title,countText); card.addEventListener('click',()=>{completedPath={listing:item.key,year:'',month:''};expandedCompletedKey='';renderRecords();}); grid.append(card);
+      }); host.append(grid); return;
+    }
+    if (!completedPath.year) {
+      const years = [...new Set(available.filter(r=>recordListingKey(r)===completedPath.listing).map(recordDate).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).map(d=>d.slice(0,4)))].sort().reverse();
+      const grid=document.createElement('div'); grid.className='completed-period-grid';
+      if (!years.length) { const p=document.createElement('p');p.className='muted';p.textContent='No completed records for this listing yet.';host.append(p);return; }
+      years.forEach(year=>{const count=available.filter(r=>recordListingKey(r)===completedPath.listing&&recordDate(r).startsWith(year)).length;const b=document.createElement('button');b.type='button';b.className='completed-period-tile';b.innerHTML=`<strong>${year}</strong><span>${count} record${count===1?'':'s'}</span>`;b.addEventListener('click',()=>{completedPath.year=year;completedPath.month='';expandedCompletedKey='';renderRecords();});grid.append(b);});host.append(grid);return;
+    }
+    if (!completedPath.month) {
+      const months=[...new Set(available.filter(r=>recordListingKey(r)===completedPath.listing&&recordDate(r).startsWith(completedPath.year)).map(recordDate).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).map(d=>d.slice(0,7)))].sort().reverse();
+      const grid=document.createElement('div');grid.className='completed-period-grid';
+      if(!months.length){const p=document.createElement('p');p.className='muted';p.textContent='No completed records for this year.';host.append(p);return;}
+      months.forEach(month=>{const label=new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1,1).toLocaleDateString('en-GB',{month:'long'});const count=available.filter(r=>recordListingKey(r)===completedPath.listing&&recordDate(r).startsWith(month)).length;const b=document.createElement('button');b.type='button';b.className='completed-period-tile';const h=document.createElement('strong');h.textContent=label;const sub=document.createElement('span');sub.textContent=`${count} record${count===1?'':'s'}`;b.append(h,sub);b.addEventListener('click',()=>{completedPath.month=month;expandedCompletedKey='';renderRecords();});grid.append(b);});host.append(grid);return;
+    }
+    const monthRecords=selected;
+    if(!monthRecords.length){const p=document.createElement('p');p.className='muted';p.textContent='No completed records for this month.';host.append(p);return;}
+    const list=document.createElement('div');list.className='completed-record-list';
+    monthRecords.forEach(record=>{
+      const d=record.data; const key=`${record.kind}:${d.id}`; const summary=document.createElement('article');summary.className='completed-record-card';
+      const row=document.createElement('button');row.type='button';row.className='completed-record-summary';
+      const main=document.createElement('span');main.className='completed-record-main';
+      const status=document.createElement('span');status.className='pill completed';status.textContent='Completed';
+      const price=document.createElement('strong');price.className='completed-record-price';price.textContent=money(d.totalAmount ?? d.total_amount ?? 0);
+      const top=document.createElement('span');top.className='completed-record-top';top.append(status,price);
+      const title=document.createElement('strong');title.className='completed-record-date';title.textContent=stayDateTitle(d.checkin||d.check_in||d.startDate,d.checkout||d.check_out||d.endDate,d.nights);
+      const subtitle=document.createElement('span');subtitle.className='completed-record-listing';subtitle.textContent=d.listingName||d.listing_name||listingTitle(completedPath.listing);
+      const ref=document.createElement('span');ref.className='completed-record-meta';ref.textContent=`Ref: ${d.reference||d.id||'—'}`;
+      const guest=document.createElement('span');guest.className='completed-record-meta';guest.textContent=`${d.guestName||d.guest_name||d.label||'Guest'}${(d.guestPhone||d.guest_phone)?' · '+(d.guestPhone||d.guest_phone):''}${(d.guestEmail||d.guest_email)?' · '+(d.guestEmail||d.guest_email):''}`;
+      main.append(top,title,subtitle,ref,guest);row.append(main);const hint=document.createElement('span');hint.className='completed-expand-hint';hint.textContent=expandedCompletedKey===key?'Hide details':'View details';row.append(hint);row.addEventListener('click',()=>{expandedCompletedKey=expandedCompletedKey===key?'':key;renderRecords();});summary.append(row);
+      if(expandedCompletedKey===key){const detail=document.createElement('div');detail.className='completed-record-detail';if(record.kind==='booking')renderBookingCard(detail,d);else renderBlockCard(detail,d);summary.append(detail);}
+      list.append(summary);
+    });host.append(list);
+  }
+
   function action(text, fn, kind='') {
     const b = document.createElement('button');
     b.type = 'button';
