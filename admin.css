@@ -36,7 +36,7 @@ h1,h2,h3,.brand{font-family:"Josefin Sans","Trebuchet MS",Arial,sans-serif}
 
 /* Public-site visual language, retained in Admin mode */
 .eyebrow{letter-spacing:.22em;text-transform:uppercase;color:#b78b37}
-.brand{font-family:"Josefin Sans",Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+.brand{font-family:"Josefin Sans",Arial,sans-serif;letter-spacing:.12em;text-transform:none;font-size:12px}
 .brand span{border:1px solid #d8c9a9;padding:4px 6px;font-size:10px}
 .tabs{gap:14px}
 .tab{font-family:inherit;text-transform:uppercase;font-size:11px;letter-spacing:.12em;padding:13px 10px}
