@@ -261,3 +261,14 @@ html, body, body *, body *::before, body *::after { font-family: "Josefin Sans",
 .tabs .manual-block-tab-control[open]{border-color:var(--gold)}
 .tabs .manual-block-tab-control .manual-block-content{top:calc(100% + 6px);left:0;right:auto}
 @media(max-width:560px){.tabs .manual-block-tab-control{min-width:0;flex:1 1 100%;margin:6px 0 0}.tabs .manual-block-tab-control .manual-block-content{position:static;width:100%;max-height:none;box-shadow:none;border:0;border-top:1px solid var(--line)}}
+
+
+/* Preserve the approved Completed archive layout: breadcrumbs above a left-aligned vertical list. */
+#bookingsList.cards.completed-archive-host{display:block!important;grid-template-columns:none!important;align-items:initial!important}
+#bookingsList.cards.completed-archive-host > .completed-breadcrumb{display:flex;width:100%;box-sizing:border-box;margin:0 0 16px}
+#bookingsList.cards.completed-archive-host > .completed-listing-grid,
+#bookingsList.cards.completed-archive-host > .completed-period-grid,
+#bookingsList.cards.completed-archive-host > .completed-record-list{clear:both;float:none;margin-left:0;margin-right:auto}
+#bookingsList.cards.completed-archive-host > .completed-listing-grid{width:min(100%,700px)}
+#bookingsList.cards.completed-archive-host > .completed-period-grid{width:min(100%,700px)}
+#bookingsList.cards.completed-archive-host > .completed-record-list{width:min(100%,540px);max-width:540px}

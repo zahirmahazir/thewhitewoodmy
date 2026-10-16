@@ -195,6 +195,7 @@
     $('#recordsHeading').textContent = titles[activeCategory] || 'Booking';
     $('#recordsCount').textContent = `${records.length} record${records.length === 1 ? '' : 's'}`;
     const host = $('#bookingsList');
+    host.classList.remove('completed-archive-host');
     host.innerHTML = '';
     if (!records.length) {
       const p = document.createElement('p');
@@ -233,7 +234,7 @@
     const b = document.createElement('button'); b.type = 'button'; b.className = 'small-button completed-back'; b.textContent = label; b.addEventListener('click', onClick); return b;
   }
   function renderCompletedHierarchy(records) {
-    const host = $('#bookingsList'); host.innerHTML = '';
+    const host = $('#bookingsList'); host.classList.add('completed-archive-host'); host.innerHTML = '';
     const available = records.filter(r => { const key = recordListingKey(r); return key === 'white-wood' || key === 'rumah-puteh' || key; });
     const selected = completedRecordsForPath(available);
     $('#recordsHeading').textContent = completedPath.listing ? `Completed · ${listingTitle(completedPath.listing)}` : 'Completed';
