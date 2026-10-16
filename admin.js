@@ -96,6 +96,9 @@
     return 'booking';
   }
   function blockCategory(b) {
+    const status = String(b.status || '').toLowerCase();
+    if (status === 'cancelled') return 'cancelled';
+    if (status === 'completed') return 'completed';
     const source = sourceOf(b);
     if (source === 'whatsapp' || source.includes('whatsapp')) return 'whatsapp';
     if (source === 'airbnb' || source === 'agoda' || source.includes('airbnb') || source.includes('agoda')) return 'airbnb';
@@ -256,22 +259,44 @@
     meta.textContent = `${b.startDate || ''} → ${b.endDate || ''}\nReason: ${b.source || 'admin'}${b.label ? ' · '+b.label : ''}${b.notes ? '\n'+b.notes : ''}`;
     meta.style.whiteSpace = 'pre-line';
     left.append(h, meta);
+    const status = String(b.status || 'confirmed').toLowerCase();
     const pill = document.createElement('span');
-    pill.className = 'pill';
-    pill.textContent = sourceOf(b) === 'agoda' ? 'Airbnb / Agoda' : (b.source || 'block');
+    pill.className = `pill ${status}`;
+    pill.textContent = status === 'cancelled' || status === 'completed' || status === 'pending' || status === 'confirmed'
+      ? status
+      : (sourceOf(b) === 'agoda' ? 'Airbnb / Agoda' : (b.source || 'block'));
     top.append(left, pill);
     card.append(top);
     const actions = document.createElement('div');
     actions.className = 'item-actions';
-    actions.append(action('Remove block', async () => {
-      if (!confirm(`Remove ${b.source} block for ${b.startDate} to ${b.endDate}?`)) return;
-      try {
-        await api('/api/blocks', { method: 'DELETE', body: JSON.stringify({ id: b.id }) });
-        message($('#globalMessage'), 'Block removed.', 'success');
-        await refreshAll();
-      } catch(err) { message($('#globalMessage'), err.message, 'error'); }
-    }, 'danger'));
-    card.append(actions);
+    const externalStay = ['whatsapp', 'airbnb', 'agoda', 'private'].includes(sourceOf(b));
+    if (externalStay && status === 'pending') {
+      actions.append(action('Confirm', () => updateBlock(b.id, 'confirmed')));
+    }
+    if (externalStay && ['pending', 'confirmed'].includes(status)) {
+      actions.append(action('Cancel booking', () => updateBlock(b.id, 'cancelled'), 'danger'));
+      actions.append(action('✓ Mark completed', () => updateBlock(b.id, 'completed'), 'complete-button'));
+    }
+    if (status === 'cancelled') {
+      actions.append(action('Delete cancelled booking', async () => {
+        if (!confirm(`Permanently delete cancelled ${b.source} stay ${b.startDate} to ${b.endDate}? This cannot be undone.`)) return;
+        try {
+          await api('/api/blocks', { method: 'DELETE', body: JSON.stringify({ id: b.id }) });
+          message($('#globalMessage'), 'Cancelled external stay deleted.', 'success');
+          await refreshAll();
+        } catch(err) { message($('#globalMessage'), err.message, 'error'); }
+      }, 'danger'));
+    } else if (!externalStay || status === 'completed') {
+      actions.append(action('Remove block', async () => {
+        if (!confirm(`Remove ${b.source} block for ${b.startDate} to ${b.endDate}?`)) return;
+        try {
+          await api('/api/blocks', { method: 'DELETE', body: JSON.stringify({ id: b.id }) });
+          message($('#globalMessage'), 'Block removed.', 'success');
+          await refreshAll();
+        } catch(err) { message($('#globalMessage'), err.message, 'error'); }
+      }, 'danger'));
+    }
+    if (actions.childElementCount) card.append(actions);
     host.append(card);
   }
   async function deleteCancelledBooking(id, reference) {
@@ -288,6 +313,15 @@
     try {
       await api('/api/bookings', { method: 'PATCH', body: JSON.stringify({ id, status }) });
       message($('#globalMessage'), `Booking updated: ${status}.`, 'success');
+      await refreshAll();
+    } catch(err) { message($('#globalMessage'), err.message, 'error'); }
+  }
+
+  async function updateBlock(id, status) {
+    if (!confirm(`Change external stay status to ${status}?`)) return;
+    try {
+      await api('/api/blocks', { method: 'PATCH', body: JSON.stringify({ id, status }) });
+      message($('#globalMessage'), `External stay updated: ${status}.`, 'success');
       await refreshAll();
     } catch(err) { message($('#globalMessage'), err.message, 'error'); }
   }
