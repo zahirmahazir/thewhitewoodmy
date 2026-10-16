@@ -217,3 +217,34 @@ html, body, body *, body *::before, body *::after { font-family: "Josefin Sans",
 .completed-record-detail .item-card .stay-date-title{display:none}
 .completed-record-detail .item-card .stay-listing-subtitle{display:none}
 @media(max-width:600px){.completed-listing-grid{grid-template-columns:1fr;gap:12px}.completed-period-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.completed-record-summary{padding:13px 11px;gap:8px}.completed-expand-hint{font-size:11px}.completed-record-detail{padding:10px}}
+
+/* Completed archive layout: left-aligned vertical cards, with full details in a booking-style modal. */
+.completed-record-list{width:min(100%,540px);max-width:540px;margin:16px 0 24px;align-items:stretch}
+.completed-record-card{width:100%;box-sizing:border-box}
+.completed-record-summary{min-height:120px;box-sizing:border-box}
+.completed-record-main{align-self:stretch}
+.completed-expand-hint{align-self:center}
+.completed-modal-overlay{position:fixed;inset:0;z-index:10000;background:rgba(20,18,16,.66);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;overflow-y:auto}
+.completed-modal{width:min(100%,640px);max-height:min(88vh,900px);display:flex;flex-direction:column;background:#fff;border:1px solid var(--line,#e6ded2);border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden;color:var(--ink,#222)}
+.completed-modal-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;border-bottom:1px solid var(--line,#e6ded2);flex-shrink:0}
+.completed-modal-header h2{margin:0;font-size:1.35rem;line-height:1.3}
+.completed-modal-close{border:0;background:transparent;color:var(--ink,#222);font:inherit;font-size:30px;line-height:1;cursor:pointer;padding:0 3px}
+.completed-modal-body{padding:22px 24px;overflow:auto}
+.completed-modal-summary{display:grid;gap:8px}
+.completed-modal-status-price{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted,#777)}
+.completed-modal-summary h3{font-size:1.15rem;line-height:1.4;margin:4px 0 0;overflow-wrap:anywhere}
+.completed-modal-listing{font-size:1rem}
+.completed-modal-summary .meta{margin:0;overflow-wrap:anywhere}
+.completed-modal-section{border-top:1px solid var(--line,#e6ded2);margin-top:18px;padding-top:16px}
+.completed-modal-section h3{margin:0 0 10px;font-size:1rem}
+.completed-modal-section p{margin:0;white-space:pre-line;overflow-wrap:anywhere}
+.completed-modal-payment{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:7px 0;color:var(--muted,#666);font-size:.9rem}
+.completed-modal-payment strong{color:var(--ink,#222);font-weight:500}
+.completed-modal-payment-note{grid-column:1/-1;color:var(--muted,#777);overflow-wrap:anywhere}
+.completed-modal-total{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line,#e6ded2);margin-top:8px;padding-top:13px}
+.completed-modal-total strong:last-child{font-size:1.1rem;color:#167247}
+.completed-modal-extra{border-top:1px solid var(--line,#e6ded2);margin-top:18px;padding-top:14px}
+.completed-modal-extra .item-card{border:0;padding:0;background:transparent}
+.completed-modal-extra .item-card .meta{white-space:pre-line}
+.completed-modal-footer{display:flex;justify-content:flex-end;padding:14px 24px;border-top:1px solid var(--line,#e6ded2);flex-shrink:0}
+@media(max-width:600px){.completed-record-list{width:100%;max-width:none}.completed-record-summary{min-height:0}.completed-modal-overlay{padding:10px;align-items:flex-end}.completed-modal{max-height:92vh;border-radius:14px 14px 8px 8px}.completed-modal-header{padding:15px 17px}.completed-modal-body{padding:17px}.completed-modal-footer{padding:12px 17px}}

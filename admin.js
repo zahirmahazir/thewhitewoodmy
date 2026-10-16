@@ -270,11 +270,62 @@
       const subtitle=document.createElement('span');subtitle.className='completed-record-listing';subtitle.textContent=d.listingName||d.listing_name||listingTitle(completedPath.listing);
       const ref=document.createElement('span');ref.className='completed-record-meta';ref.textContent=`Ref: ${d.reference||d.id||'—'}`;
       const guest=document.createElement('span');guest.className='completed-record-meta';guest.textContent=`${d.guestName||d.guest_name||d.label||'Guest'}${(d.guestPhone||d.guest_phone)?' · '+(d.guestPhone||d.guest_phone):''}${(d.guestEmail||d.guest_email)?' · '+(d.guestEmail||d.guest_email):''}`;
-      main.append(top,title,subtitle,ref,guest);row.append(main);const hint=document.createElement('span');hint.className='completed-expand-hint';hint.textContent=expandedCompletedKey===key?'Hide details':'View details';row.append(hint);row.addEventListener('click',()=>{expandedCompletedKey=expandedCompletedKey===key?'':key;renderRecords();});summary.append(row);
-      if(expandedCompletedKey===key){const detail=document.createElement('div');detail.className='completed-record-detail';if(record.kind==='booking')renderBookingCard(detail,d);else renderBlockCard(detail,d);summary.append(detail);}
+      main.append(top,title,subtitle,ref,guest);row.append(main);const hint=document.createElement('span');hint.className='completed-expand-hint';hint.textContent='View details';row.append(hint);row.addEventListener('click',()=>openCompletedDetails(record));summary.append(row);
       list.append(summary);
     });host.append(list);
   }
+
+  function openCompletedDetails(record) {
+    closeCompletedDetails();
+    const d = record.data || {};
+    const overlay = document.createElement('div'); overlay.className = 'completed-modal-overlay'; overlay.setAttribute('role','presentation');
+    const dialog = document.createElement('section'); dialog.className = 'completed-modal'; dialog.setAttribute('role','dialog'); dialog.setAttribute('aria-modal','true'); dialog.setAttribute('aria-labelledby','completedModalTitle');
+    const head = document.createElement('header'); head.className = 'completed-modal-header';
+    const heading = document.createElement('h2'); heading.id = 'completedModalTitle'; heading.textContent = 'Stay details';
+    const close = document.createElement('button'); close.type='button'; close.className='completed-modal-close'; close.setAttribute('aria-label','Close details'); close.textContent='×'; close.addEventListener('click',closeCompletedDetails);
+    head.append(heading,close);
+    const body = document.createElement('div'); body.className='completed-modal-body';
+    const summary = document.createElement('div'); summary.className='completed-modal-summary';
+    const statusPrice = document.createElement('div'); statusPrice.className='completed-modal-status-price';
+    const pill = document.createElement('span'); pill.className='pill completed'; pill.textContent='Completed';
+    const price = document.createElement('strong'); price.textContent=money(d.totalAmount ?? d.total_amount ?? 0);
+    statusPrice.append(pill,price);
+    const dateTitle = document.createElement('h3'); dateTitle.textContent=stayDateTitle(d.checkin||d.check_in||d.startDate,d.checkout||d.check_out||d.endDate,d.nights);
+    const listing = document.createElement('strong'); listing.className='completed-modal-listing'; listing.textContent=d.listingName||d.listing_name||listingTitle(completedPath.listing);
+    const ref = document.createElement('p'); ref.className='meta'; ref.textContent=`Ref: ${d.reference||d.id||'—'}`;
+    const guest = document.createElement('p'); guest.className='meta'; guest.textContent=`${d.guestName||d.guest_name||d.label||'Guest'}${(d.guestPhone||d.guest_phone)?' · '+(d.guestPhone||d.guest_phone):''}${(d.guestEmail||d.guest_email)?' · '+(d.guestEmail||d.guest_email):''}`;
+    summary.append(statusPrice,dateTitle,listing,ref,guest); body.append(summary);
+    const payments = paymentsFor(d.id);
+    if (payments.length) {
+      const section = document.createElement('section'); section.className='completed-modal-section';
+      const title = document.createElement('h3'); title.textContent='Payment history'; section.append(title);
+      payments.slice().sort((a,b)=>String(b.paidAt||b.paid_at||'').localeCompare(String(a.paidAt||a.paid_at||''))).forEach(payment=>{
+        const line=document.createElement('div'); line.className='completed-modal-payment';
+        const date=document.createElement('span'); date.textContent=payment.paidAt||payment.paid_at||'—';
+        const amount=document.createElement('strong'); amount.textContent=money(payment.amountPaid ?? payment.amount_paid ?? 0);
+        line.append(date,amount); if(payment.note){const note=document.createElement('small');note.className='completed-modal-payment-note';note.textContent=payment.note;line.append(note);} section.append(line);
+      });
+      const total=document.createElement('div');total.className='completed-modal-total';const label=document.createElement('strong');label.textContent='Total received';const value=document.createElement('strong');value.textContent=money(paidTotal(d.id));total.append(label,value);section.append(total);body.append(section);
+    }
+    if(d.notes){const section=document.createElement('section');section.className='completed-modal-section';const title=document.createElement('h3');title.textContent='Notes';const notes=document.createElement('p');notes.textContent=d.notes;section.append(title,notes);body.append(section);}
+    const detailHost=document.createElement('div');detailHost.className='completed-modal-extra';
+    if(record.kind==='booking') renderBookingCard(detailHost,d); else renderBlockCard(detailHost,d);
+    // The modal summary already contains the date, listing and reference. Keep only useful details/actions/attachments.
+    const renderedCard=detailHost.querySelector('.item-card');
+    if(renderedCard){
+      renderedCard.querySelector('.item-top')?.remove();
+      renderedCard.querySelector('.stay-date-title')?.remove();
+      renderedCard.querySelector('.stay-listing-subtitle')?.remove();
+      renderedCard.querySelector('.meta')?.remove();
+      const paymentNote=renderedCard.querySelector('.payment-note'); if(paymentNote) paymentNote.remove();
+      const actionBlock=renderedCard.querySelector('.item-actions');
+      if(actionBlock || renderedCard.querySelector('.attachment-tools')) body.append(detailHost);
+    }
+    const footer=document.createElement('footer');footer.className='completed-modal-footer';const done=document.createElement('button');done.type='button';done.className='small-button';done.textContent='Close';done.addEventListener('click',closeCompletedDetails);footer.append(done);
+    dialog.append(head,body,footer);overlay.append(dialog);overlay.addEventListener('click',e=>{if(e.target===overlay)closeCompletedDetails();});document.body.append(overlay);document.addEventListener('keydown',completedModalEscape);close.focus();
+  }
+  function completedModalEscape(event){if(event.key==='Escape')closeCompletedDetails();}
+  function closeCompletedDetails(){const overlay=document.querySelector('.completed-modal-overlay');if(overlay)overlay.remove();document.removeEventListener('keydown',completedModalEscape);}
 
   function action(text, fn, kind='') {
     const b = document.createElement('button');
