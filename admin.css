@@ -248,3 +248,14 @@ html, body, body *, body *::before, body *::after { font-family: "Josefin Sans",
 .completed-modal-extra .item-card .meta{white-space:pre-line}
 .completed-modal-footer{display:flex;justify-content:flex-end;padding:14px 24px;border-top:1px solid var(--line,#e6ded2);flex-shrink:0}
 @media(max-width:600px){.completed-record-list{width:100%;max-width:none}.completed-record-summary{min-height:0}.completed-modal-overlay{padding:10px;align-items:flex-end}.completed-modal{max-height:92vh;border-radius:14px 14px 8px 8px}.completed-modal-header{padding:15px 17px}.completed-modal-body{padding:17px}.completed-modal-footer{padding:12px 17px}}
+
+
+/* Fix: the shared .cards grid was placing Completed breadcrumbs and the record list in separate columns. */
+#bookingsList.cards.completed-archive-host{display:block!important;grid-template-columns:none!important;align-items:initial!important}
+#bookingsList.cards.completed-archive-host > .completed-breadcrumb{display:flex;width:100%;box-sizing:border-box;margin:0 0 16px}
+#bookingsList.cards.completed-archive-host > .completed-listing-grid,
+#bookingsList.cards.completed-archive-host > .completed-period-grid,
+#bookingsList.cards.completed-archive-host > .completed-record-list{clear:both;float:none;margin-left:0;margin-right:auto}
+#bookingsList.cards.completed-archive-host > .completed-listing-grid{width:min(100%,700px)}
+#bookingsList.cards.completed-archive-host > .completed-period-grid{width:min(100%,700px)}
+#bookingsList.cards.completed-archive-host > .completed-record-list{width:min(100%,540px);max-width:540px}
