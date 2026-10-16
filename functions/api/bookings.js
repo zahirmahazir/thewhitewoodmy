@@ -2,6 +2,7 @@
 export async function onRequestGet({ request, env }) {
   const auth = authorize(request, env); if (auth) return auth;
   if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
+  try { await ensureStatusColumn(env.DB); } catch { return json({ error: 'Booking status storage is not ready.' }, 500); }
   const url = new URL(request.url);
   const listingId = url.searchParams.get('listingId') || '';
   const status = url.searchParams.get('status') || '';
@@ -21,6 +22,7 @@ export async function onRequestGet({ request, env }) {
 export async function onRequestPatch({ request, env }) {
   const auth = authorize(request, env); if (auth) return auth;
   if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
+  try { await ensureStatusColumn(env.DB); } catch { return json({ error: 'Booking status storage is not ready.' }, 500); }
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Request body must be valid JSON.' }, 400); }
   const id = clean(body.id, 80);
@@ -32,7 +34,7 @@ export async function onRequestPatch({ request, env }) {
     if (!booking) return json({ error: 'Booking not found.' }, 404);
     if (status === 'confirmed') {
       const conflict = await env.DB.prepare(`SELECT 1 AS found FROM bookings WHERE listing_id = ? AND id <> ? AND status IN ('pending','confirmed') AND checkin < ? AND checkout > ? LIMIT 1`).bind(booking.listing_id, id, booking.checkout, booking.checkin).first();
-      const block = await env.DB.prepare(`SELECT 1 AS found FROM date_blocks WHERE listing_id = ? AND start_date < ? AND end_date > ? LIMIT 1`).bind(booking.listing_id, booking.checkout, booking.checkin).first();
+      const block = await env.DB.prepare(`SELECT 1 AS found FROM date_blocks WHERE listing_id = ? AND status IN ('pending','confirmed') AND start_date < ? AND end_date > ? LIMIT 1`).bind(booking.listing_id, booking.checkout, booking.checkin).first();
       if (conflict || block) return json({ error: 'Cannot confirm: dates overlap another active booking or block.' }, 409);
     }
     await env.DB.prepare(`UPDATE bookings SET status = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?`).bind(status, id).run();
@@ -54,6 +56,7 @@ const SOURCES = new Set(['website', 'whatsapp', 'airbnb', 'agoda', 'private', 'a
 
 export async function onRequestPost({ request, env }) {
   if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
+  try { await ensureStatusColumn(env.DB); } catch { return json({ error: 'Booking status storage is not ready.' }, 500); }
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Request body must be valid JSON.' }, 400); }
 
@@ -93,7 +96,7 @@ export async function onRequestPost({ request, env }) {
       )
       AND NOT EXISTS (
         SELECT 1 FROM date_blocks d
-        WHERE d.listing_id = ? AND d.start_date < ? AND d.end_date > ?
+        WHERE d.listing_id = ? AND d.status IN ('pending','confirmed') AND d.start_date < ? AND d.end_date > ?
       )
     `).bind(
       id, reference, listingId, checkin, checkout, nights, guestName, guestEmail, guestPhone, guests, source, totalAmount, notes,
@@ -118,4 +121,9 @@ function validDate(value) {
 function dateDiff(start, end) { return Math.round((Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86400000); }
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
+}
+
+async function ensureStatusColumn(db) {
+  const columns = await db.prepare('PRAGMA table_info(date_blocks)').all();
+  if (!(columns.results || []).some(column => column.name === 'status')) await db.prepare("ALTER TABLE date_blocks ADD COLUMN status TEXT NOT NULL DEFAULT 'confirmed'").run();
 }

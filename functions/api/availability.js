@@ -4,6 +4,7 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function onRequestGet({ request, env }) {
   if (!env.DB) return json({ error: 'Database binding DB is not configured.' }, 500);
+  try { await ensureStatusColumn(env.DB); } catch { return json({ error: 'Availability status storage is not ready.' }, 500); }
   const url = new URL(request.url);
   const listingId = (url.searchParams.get('listingId') || '').trim();
   const checkin = url.searchParams.get('checkin') || '';
@@ -33,7 +34,7 @@ export async function onRequestGet({ request, env }) {
       `).bind(listingId, end, start).all();
       const blockRows = await env.DB.prepare(`
         SELECT start_date, end_date FROM date_blocks
-        WHERE listing_id = ? AND start_date < ? AND end_date > ?
+        WHERE listing_id = ? AND status IN ('pending', 'confirmed') AND start_date < ? AND end_date > ?
       `).bind(listingId, end, start).all();
       return json({
         listingId, start, end, minimumNights: listing.minimum_nights,
@@ -57,7 +58,7 @@ export async function onRequestGet({ request, env }) {
     `).bind(listingId, checkout, checkin).first();
     const blockConflict = await env.DB.prepare(`
       SELECT source AS conflict FROM date_blocks
-      WHERE listing_id = ? AND start_date < ? AND end_date > ? LIMIT 1
+      WHERE listing_id = ? AND status IN ('pending', 'confirmed') AND start_date < ? AND end_date > ? LIMIT 1
     `).bind(listingId, checkout, checkin).first();
 
     const available = !bookingConflict && !blockConflict;
@@ -75,4 +76,9 @@ function validDate(value) {
 function dateDiff(start, end) { return Math.round((Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86400000); }
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
+}
+
+async function ensureStatusColumn(db) {
+  const columns = await db.prepare('PRAGMA table_info(date_blocks)').all();
+  if (!(columns.results || []).some(column => column.name === 'status')) await db.prepare("ALTER TABLE date_blocks ADD COLUMN status TEXT NOT NULL DEFAULT 'confirmed'").run();
 }
